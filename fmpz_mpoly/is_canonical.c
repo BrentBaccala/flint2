@@ -20,7 +20,7 @@ int fmpz_mpoly_is_canonical(const fmpz_mpoly_t A, const fmpz_mpoly_ctx_t ctx)
         if (fmpz_is_zero(A->coeffs + i))
             return 0;
         if (i > 0) {
-            if (__fmpz_gte(A->new_exps + i - 1, A->new_exps + i))
+            if (__fmpz_lte(A->new_exps + i - 1, A->new_exps + i))
                 return 0;
         }
     }
@@ -37,7 +37,7 @@ void fmpz_mpoly_assert_canonical(const fmpz_mpoly_t A, const fmpz_mpoly_ctx_t ct
         if (fmpz_is_zero(A->coeffs + i))
             flint_throw(FLINT_ERROR, "Polynomial has a zero coefficient");
         if (i > 0) {
-            if (__fmpz_gte(A->new_exps + i - 1, A->new_exps + i))
+            if (__fmpz_lte(A->new_exps + i - 1, A->new_exps + i))
                 flint_throw(FLINT_ERROR, "Polynomial exponents out of order");
         }
     }

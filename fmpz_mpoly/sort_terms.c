@@ -136,7 +136,7 @@ _fmpz_mpoly_quicksort (void *const pbase, size_t total_elems, size_t size,
 
 int _fmpz_mpoly_compare (const fmpz *a, const fmpz *b, fmpz_mpoly_t A)
 {
-  return fmpz_cmp(a, b);
+  return -fmpz_cmp(a, b);
 }
 
 void _fmpz_mpoly_swap (fmpz *a, fmpz *b, fmpz_mpoly_t A)

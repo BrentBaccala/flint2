@@ -131,7 +131,7 @@ slong _fmpz_mpoly_sub_new(fmpz * poly1, fmpz * exps1,
    {
       int cmp = fmpz_cmp(exps2 + i, exps3 + j);
 
-      if (cmp < 0)
+      if (cmp > 0)
       {
          fmpz_set(poly1 + k, poly2 + i);
          fmpz_set(exps1 + k, exps2 + i);
