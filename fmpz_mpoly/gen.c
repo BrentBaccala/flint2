@@ -14,20 +14,16 @@
 
 void fmpz_mpoly_gen(fmpz_mpoly_t A, slong var, const fmpz_mpoly_ctx_t ctx)
 {
-    flint_bitcnt_t bits;
-
-    bits = mpoly_gen_bits_required(var, ctx->minfo);
-    bits = mpoly_fix_bits(bits, ctx->minfo);
+    if (var < 0)
+      flint_throw(FLINT_ERROR, "Negative variable in fmpz_mpoly_gen");
 
     fmpz_mpoly_fit_length(A, WORD(1), ctx);
-    fmpz_mpoly_fit_bits(A, bits, ctx);
-    A->bits = bits;
 
     fmpz_one(A->coeffs);
-    if (bits <= FLINT_BITS)
-        mpoly_gen_monomial_sp(A->exps, var, bits, ctx->minfo);
-    else
-        mpoly_gen_monomial_offset_mp(A->exps, var, bits, ctx->minfo);
+    fmpz_one(A->new_exps);
+    do {
+      fmpz_nextprime(A->new_exps, A->new_exps, 1);
+    } while (var --);
 
     _fmpz_mpoly_set_length(A, WORD(1), ctx);
 }

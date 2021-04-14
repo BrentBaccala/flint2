@@ -674,15 +674,9 @@ void fmpz_mpoly_pow_fps(fmpz_mpoly_t A, const fmpz_mpoly_t B,
     if (B->length == 1)
     {
         fmpz_mpoly_fit_length(A, 1, ctx);
-        fmpz_mpoly_fit_bits(A, exp_bits, ctx);
-        A->bits = exp_bits;
 
         fmpz_pow_ui(A->coeffs + 0, B->coeffs + 0, k);
-
-        if (exp_bits <= FLINT_BITS)
-            mpoly_monomial_mul_ui(A->exps, Bexp, N, k);
-        else
-            mpoly_monomial_mul_ui_mp(A->exps, Bexp, N, k);
+        fmpz_pow_ui(A->new_exps + 0, B->new_exps + 0, k);
 
         len = 1;
         goto cleanup;

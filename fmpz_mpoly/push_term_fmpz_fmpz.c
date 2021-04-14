@@ -14,19 +14,11 @@
 void _fmpz_mpoly_push_exp_ffmpz(fmpz_mpoly_t A,
                                  const fmpz * exp, const fmpz_mpoly_ctx_t ctx)
 {
-    slong N;
     slong old_length = A->length;
-    flint_bitcnt_t exp_bits;
-
-    exp_bits = mpoly_exp_bits_required_ffmpz(exp, ctx->minfo);
-    exp_bits = mpoly_fix_bits(exp_bits, ctx->minfo);
-    fmpz_mpoly_fit_bits(A, exp_bits, ctx);
-
-    N = mpoly_words_per_exp(A->bits, ctx->minfo);
 
     fmpz_mpoly_fit_length(A, old_length + 1, ctx);
     A->length = old_length + 1;
-    mpoly_set_monomial_ffmpz(A->exps + N*old_length, exp, A->bits, ctx->minfo);
+    fmpz_set(A->new_exps + old_length, exp);
 }
 
 void _fmpz_mpoly_push_exp_pfmpz(fmpz_mpoly_t A,

@@ -25,6 +25,17 @@ void _fmpz_mpoly_fit_length(fmpz ** poly,
     }
 }
 
+void _fmpz_mpoly_fit_length_new(fmpz ** poly,
+                                fmpz ** exps, slong * alloc, slong len)
+{
+    if (len > *alloc)
+    {
+        /* at least double size */
+        len = FLINT_MAX(len, 2*(*alloc));
+        _fmpz_mpoly_realloc_new(poly, exps, alloc, len);
+    }
+}
+
 void
 fmpz_mpoly_fit_length(fmpz_mpoly_t poly, slong len, const fmpz_mpoly_ctx_t ctx)
 {

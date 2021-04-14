@@ -20,7 +20,7 @@
 */
 void fmpz_mpoly_combine_like_terms(fmpz_mpoly_t A, const fmpz_mpoly_ctx_t ctx)
 {
-    slong in, out, N = mpoly_words_per_exp(A->bits, ctx->minfo);
+    slong in, out;
 
     out = -WORD(1);
 
@@ -28,8 +28,7 @@ void fmpz_mpoly_combine_like_terms(fmpz_mpoly_t A, const fmpz_mpoly_ctx_t ctx)
     {
         FLINT_ASSERT(in > out);
 
-        if (out >= WORD(0) &&
-                     mpoly_monomial_equal(A->exps + N*out, A->exps + N*in, N))
+        if (out >= WORD(0) && fmpz_equal(A->new_exps + out, A->new_exps + in))
         {
             fmpz_add(A->coeffs + out, A->coeffs + out, A->coeffs + in);
         } else
@@ -39,7 +38,7 @@ void fmpz_mpoly_combine_like_terms(fmpz_mpoly_t A, const fmpz_mpoly_ctx_t ctx)
 
             if (out != in)
             {
-                mpoly_monomial_set(A->exps + N*out, A->exps + N*in, N);
+		fmpz_swap(A->new_exps + out, A->new_exps + in);
                 fmpz_swap(A->coeffs + out, A->coeffs + in);
             }
         }

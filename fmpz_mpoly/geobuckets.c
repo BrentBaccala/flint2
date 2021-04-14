@@ -117,7 +117,7 @@ void _fmpz_mpoly_geobucket_fix(fmpz_mpoly_geobucket_t B, slong i,
     }
 }
 
-/* add polynomial p to buckect B */
+/* add polynomial p to bucket B */
 void fmpz_mpoly_geobucket_add(fmpz_mpoly_geobucket_t B, fmpz_mpoly_t p,
                                                     const fmpz_mpoly_ctx_t ctx)
 {

@@ -58,6 +58,7 @@ typedef fmpz_mpoly_ctx_struct fmpz_mpoly_ctx_t[1];
 typedef struct
 {
    fmpz * coeffs; /* alloc fmpzs */
+   fmpz * new_exps;
    ulong * exps;
    slong alloc;
    slong length;
@@ -162,11 +163,17 @@ FLINT_DLL void fmpz_mpoly_init3(fmpz_mpoly_t A, slong alloc, flint_bitcnt_t bits
 FLINT_DLL void _fmpz_mpoly_realloc(fmpz ** Acoeff, ulong ** Aexp,
                                            slong * Aalloc, slong len, slong N);
 
+FLINT_DLL void _fmpz_mpoly_realloc_new(fmpz ** Acoeff, fmpz ** Aexp,
+                                           slong * Aalloc, slong len);
+
 FLINT_DLL void fmpz_mpoly_realloc(fmpz_mpoly_t A, slong alloc, 
                                                    const fmpz_mpoly_ctx_t ctx);
 
 FLINT_DLL void _fmpz_mpoly_fit_length(fmpz ** Acoeff,
                             ulong ** Aexp, slong * Aalloc, slong len, slong N);
+
+FLINT_DLL void _fmpz_mpoly_fit_length_new(fmpz ** Acoeff,
+                            fmpz ** Aexp, slong * Aalloc, slong len);
 
 FLINT_DLL void fmpz_mpoly_fit_length(fmpz_mpoly_t A, slong len, 
                                                    const fmpz_mpoly_ctx_t ctx);
@@ -180,8 +187,10 @@ void _fmpz_mpoly_set_length(fmpz_mpoly_t A, slong newlen,
     if (A->length > newlen)
     {
         slong i;
-        for (i = newlen; i < A->length; i++)
-           _fmpz_demote(A->coeffs + i); 
+        for (i = newlen; i < A->length; i++) {
+           _fmpz_demote(A->coeffs + i);
+           _fmpz_demote(A->new_exps + i);
+	}
     }
     A->length = newlen;
 }
@@ -194,8 +203,10 @@ void fmpz_mpoly_truncate(fmpz_mpoly_t A, slong newlen,
     {
         slong i;
 
-        for (i = newlen; i < A->length; i++)
+        for (i = newlen; i < A->length; i++) {
             _fmpz_demote(A->coeffs + i);
+            _fmpz_demote(A->new_exps + i); 
+	}
 
         A->length = newlen;
     }  
@@ -266,6 +277,9 @@ FLINT_DLL int fmpz_mpoly_is_gen(const fmpz_mpoly_t poly,
 
 FLINT_DLL void _fmpz_mpoly_set(fmpz * poly1, ulong * exps1,
                     const fmpz * poly2, const ulong * exps2, slong n, slong N);
+
+FLINT_DLL void _fmpz_mpoly_set_new(fmpz * poly1, fmpz * exps1,
+                    const fmpz * poly2, const fmpz * exps2, slong n);
 
 FLINT_DLL void fmpz_mpoly_set(fmpz_mpoly_t A, const fmpz_mpoly_t B,
                                                    const fmpz_mpoly_ctx_t ctx);
@@ -633,6 +647,10 @@ FLINT_DLL slong _fmpz_mpoly_add(fmpz * poly1, ulong * exps1,
                  const fmpz * poly2, const ulong * exps2, slong len2,
                  const fmpz * poly3, const ulong * exps3, slong len3, slong N,
                                                         const ulong * cmpmask);
+
+FLINT_DLL slong _fmpz_mpoly_add_new(fmpz * poly1, fmpz * exps1,
+                 const fmpz * poly2, const fmpz * exps2, slong len2,
+                 const fmpz * poly3, const fmpz * exps3, slong len3);
 
 FLINT_DLL void fmpz_mpoly_sub(fmpz_mpoly_t A, const fmpz_mpoly_t B,
                              const fmpz_mpoly_t C, const fmpz_mpoly_ctx_t ctx);

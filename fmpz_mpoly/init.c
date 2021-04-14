@@ -17,6 +17,7 @@ void fmpz_mpoly_init(fmpz_mpoly_t A, const fmpz_mpoly_ctx_t ctx)
     /* default to MPOLY_MIN_BITS bits per exponent */
     A->coeffs = NULL;
     A->exps = NULL;
+    A->new_exps = NULL;
     A->alloc = 0;
     A->length = 0;
     A->bits = MPOLY_MIN_BITS;
@@ -25,19 +26,17 @@ void fmpz_mpoly_init(fmpz_mpoly_t A, const fmpz_mpoly_ctx_t ctx)
 void fmpz_mpoly_init3(fmpz_mpoly_t A, slong alloc, flint_bitcnt_t bits,
                                                     const fmpz_mpoly_ctx_t ctx)
 {
-   slong N = mpoly_words_per_exp(bits, ctx->minfo);
-
     /* sanitize alloc input */
     alloc = FLINT_MAX(alloc, WORD(0));
 
    if (alloc != 0)
    {
       A->coeffs = (fmpz *) flint_calloc(alloc, sizeof(fmpz));
-      A->exps   = (ulong *) flint_malloc(alloc*N*sizeof(ulong));
+      A->new_exps = (fmpz *) flint_calloc(alloc, sizeof(fmpz));
    } else
    {
       A->coeffs = NULL;
-      A->exps = NULL;
+      A->new_exps = NULL;
    }
    A->alloc = alloc;
    A->length = 0;

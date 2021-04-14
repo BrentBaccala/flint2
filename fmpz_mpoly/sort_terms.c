@@ -11,7 +11,6 @@
 
 #include "fmpz_mpoly.h"
 
-
 /*
     sort terms in [left, right) by exponent
     assuming that bits in position > pos are already sorted
@@ -126,6 +125,27 @@ void _fmpz_mpoly_radix_sort(fmpz_mpoly_t A, slong left, slong right,
     }
 }
 
+/* include some declarations for qsort.c (a modified GNU quicksort) */
+
+typedef int (*__compar_d_fn_t) (const void *, const void *, void *);
+typedef void (*__swap_d_fn_t) (void *, void *, void *);
+
+void
+_fmpz_mpoly_quicksort (void *const pbase, size_t total_elems, size_t size,
+	    __compar_d_fn_t cmp, __swap_d_fn_t swap, void *arg);
+
+int _fmpz_mpoly_compare (const fmpz *a, const fmpz *b, fmpz_mpoly_t A)
+{
+  return fmpz_cmp(a, b);
+}
+
+void _fmpz_mpoly_swap (fmpz *a, fmpz *b, fmpz_mpoly_t A)
+{
+  fmpz * aa = (a - A->new_exps + A->coeffs);
+  fmpz * bb = (b - A->new_exps + A->coeffs);
+  fmpz_swap(a, b);
+  fmpz_swap(aa, bb);
+}
 
 /*
     sort the terms in A by exponent
@@ -133,40 +153,6 @@ void _fmpz_mpoly_radix_sort(fmpz_mpoly_t A, slong left, slong right,
 */
 void fmpz_mpoly_sort_terms(fmpz_mpoly_t A, const fmpz_mpoly_ctx_t ctx)
 {
-    slong i, msb, N;
-    ulong himask, * ptempexp;
-    TMP_INIT;
-
-    TMP_START;
-    N = mpoly_words_per_exp(A->bits, ctx->minfo);
-    ptempexp = (ulong *) TMP_ALLOC(N*sizeof(ulong));
-    mpoly_get_cmpmask(ptempexp, N, A->bits, ctx->minfo);
-
-    himask = 0;
-    for (i = 0; i < A->length; i++)
-    {
-        himask |= (A->exps + N*i)[N - 1];
-    }
-
-    if (himask != 0)
-    {
-        count_leading_zeros(msb, himask);
-        msb = (FLINT_BITS - 1)^msb;
-    } else
-    {
-        msb = -WORD(1);
-    }
-
-    if (N == 1)
-    {
-        if (msb >= 0)
-        {
-            _fmpz_mpoly_radix_sort1(A, 0, A->length, msb, ptempexp[0], himask);
-        }
-    } else
-    {
-        _fmpz_mpoly_radix_sort(A, 0, A->length, (N - 1)*FLINT_BITS + msb, N, ptempexp);
-    }
-
-    TMP_END;
+    _fmpz_mpoly_quicksort(A->new_exps, A->length, sizeof(fmpz),
+			  _fmpz_mpoly_compare, _fmpz_mpoly_swap, A);
 }

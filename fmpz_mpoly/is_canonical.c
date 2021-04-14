@@ -15,19 +15,14 @@ int fmpz_mpoly_is_canonical(const fmpz_mpoly_t A, const fmpz_mpoly_ctx_t ctx)
 {
     slong i;
 
-    if (!mpoly_monomials_valid_test(A->exps, A->length, A->bits, ctx->minfo))
-        return 0;
-
-    if (mpoly_monomials_overflow_test(A->exps, A->length, A->bits, ctx->minfo))
-        return 0;
-
-    if (!mpoly_monomials_inorder_test(A->exps, A->length, A->bits, ctx->minfo))
-        return 0;
-
     for (i = 0; i < A->length; i++)
     {
         if (fmpz_is_zero(A->coeffs + i))
             return 0;
+        if (i > 0) {
+            if (__fmpz_gte(A->new_exps + i - 1, A->new_exps + i))
+                return 0;
+        }
     }
 
     return 1;
@@ -37,24 +32,21 @@ void fmpz_mpoly_assert_canonical(const fmpz_mpoly_t A, const fmpz_mpoly_ctx_t ct
 {
     slong i;
 
-    if (!mpoly_monomials_valid_test(A->exps, A->length, A->bits, ctx->minfo))
-        flint_throw(FLINT_ERROR, "Polynomial exponents invalid");
-
-    if (mpoly_monomials_overflow_test(A->exps, A->length, A->bits, ctx->minfo))
-        flint_throw(FLINT_ERROR, "Polynomial exponents overflow");
-
-    if (!mpoly_monomials_inorder_test(A->exps, A->length, A->bits, ctx->minfo))
-        flint_throw(FLINT_ERROR, "Polynomial exponents out of order");
-
     for (i = 0; i < A->length; i++)
     {
         if (fmpz_is_zero(A->coeffs + i))
             flint_throw(FLINT_ERROR, "Polynomial has a zero coefficient");
+        if (i > 0) {
+            if (__fmpz_gte(A->new_exps + i - 1, A->new_exps + i))
+                flint_throw(FLINT_ERROR, "Polynomial exponents out of order");
+        }
     }
 
     for (i = A->length; i < A->alloc; i++)
     {
         if (COEFF_IS_MPZ(A->coeffs[i]))
             flint_throw(FLINT_ERROR, "Polynomial has a big coeff past length");
+        if (COEFF_IS_MPZ(A->new_exps[i]))
+            flint_throw(FLINT_ERROR, "Polynomial has a big exponent past length");
     }
 }
