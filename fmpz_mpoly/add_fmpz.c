@@ -15,7 +15,7 @@
 void fmpz_mpoly_add_fmpz(fmpz_mpoly_t A, const fmpz_mpoly_t B,
                                     const fmpz_t c, const fmpz_mpoly_ctx_t ctx)
 {
-    slong i, N;
+    slong i;
     slong Blen = B->length;
 
     if (Blen == 0)
@@ -26,21 +26,17 @@ void fmpz_mpoly_add_fmpz(fmpz_mpoly_t A, const fmpz_mpoly_t B,
 
     if (!fmpz_is_zero(c))
     {
-        N = mpoly_words_per_exp(B->bits, ctx->minfo);
-
-        if (mpoly_monomial_is_zero(B->exps + (Blen - 1)*N, N))
+        if (fmpz_is_zero(B->new_exps + (Blen - 1)))
         {
             if (A != B)
             {
                 fmpz_mpoly_fit_length(A, B->length, ctx);
-                fmpz_mpoly_fit_bits(A, B->bits, ctx);
-                A->bits = B->bits;
 
                 for (i = 0; i < Blen - 1; i++)
                     fmpz_set(A->coeffs + i, B->coeffs + i);
 
-                for (i = 0; i < Blen*N; i++)
-                    A->exps[i] = B->exps[i];
+                for (i = 0; i < Blen; i++)
+                    fmpz_set(A->new_exps + i, B->new_exps + i);
 
                 _fmpz_mpoly_set_length(A, B->length, ctx);
             }
@@ -56,18 +52,13 @@ void fmpz_mpoly_add_fmpz(fmpz_mpoly_t A, const fmpz_mpoly_t B,
 
             if (A != B)
             {
-                fmpz_mpoly_fit_bits(A, B->bits, ctx);
-                A->bits = B->bits;
-
-                for (i = 0; i < Blen; i++)
+                for (i = 0; i < Blen; i++) {
                     fmpz_set(A->coeffs + i, B->coeffs + i);
-
-                for (i = 0; i < Blen*N; i++)
-                    A->exps[i] = B->exps[i];
+                    fmpz_set(A->new_exps + i, B->new_exps + i);
+                }
             } 
 
-            for (i = 0; i < N; i++)
-                A->exps[Blen*N + i] = 0;
+            fmpz_zero(A->new_exps + Blen);
 
             fmpz_set(A->coeffs + Blen, c);
 
