@@ -21,5 +21,5 @@ int fmpz_mpoly_is_gen(const fmpz_mpoly_t A,
     if (!fmpz_is_one(A->coeffs + 0))
         return 0;
 
-    return mpoly_is_gen(A->exps, var, A->bits, ctx->minfo);
+    return fmpz_is_prime(A->new_exps + 0);
 }
