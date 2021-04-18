@@ -51,6 +51,8 @@ slong _fmpz_mpoly_mul_johnson_new(fmpz ** poly1, fmpz ** exp1, slong * alloc,
 
    next_loc = len2 + 4;   /* something bigger than heap can ever be */
    heap = (fmpz_mpoly_heap_s *) TMP_ALLOC((len2 + 1)*sizeof(fmpz_mpoly_heap_s));
+   for (i = 0; i < len2 + 1; i++)
+      fmpz_init(heap[i].exp);
    /* alloc array of heap nodes which can be chained together */
    chain = (mpoly_heap_t *) TMP_ALLOC(len2*sizeof(mpoly_heap_t));
    /* space for temporary storage of pointers to heap nodes */
@@ -68,11 +70,15 @@ slong _fmpz_mpoly_mul_johnson_new(fmpz ** poly1, fmpz ** exp1, slong * alloc,
    /* start with no heap nodes and no exponent vectors in use */
    exp_next = 0;
 
+   fmpz_init(exp);
+
    /* put (0, 0, exp2[0] + exp3[0]) on heap */
    x = chain + 0;
    x->i = 0;
    x->j = 0;
    x->next = NULL;
+
+   exp_next ++;
 
    heap[1].next = x;
    fmpz_init(heap[1].exp);

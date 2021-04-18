@@ -35,8 +35,10 @@ void _fmpz_mpoly_realloc_new(fmpz ** poly, fmpz ** exps,
     (*poly) = (fmpz *) flint_realloc(*poly, len*sizeof(fmpz));
     (*exps) = (fmpz *) flint_realloc(*exps, len*sizeof(fmpz));
 
-    if (len > *alloc)
+    if (len > *alloc) {
         memset(*poly + *alloc, 0, (len - *alloc)*sizeof(fmpz));
+        memset(*exps + *alloc, 0, (len - *alloc)*sizeof(fmpz));
+    }
     
     (*alloc) = len;
 }
