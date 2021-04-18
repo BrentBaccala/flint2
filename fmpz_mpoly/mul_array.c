@@ -1335,10 +1335,7 @@ int fmpz_mpoly_mul_array(
     const fmpz_mpoly_t C,
     const fmpz_mpoly_ctx_t ctx)
 {
-    slong i;
     int success;
-    fmpz * maxBfields, * maxCfields;
-    TMP_INIT;
 
     if (B->length == 0 || C->length == 0)
     {
@@ -1346,27 +1343,9 @@ int fmpz_mpoly_mul_array(
         return 1;
     }
 
-    if (  1 != mpoly_words_per_exp(B->bits, ctx->minfo)
-       || 1 != mpoly_words_per_exp(C->bits, ctx->minfo)
-       )
-    {
-        return 0;
-    }
-
-    TMP_START;
-
-    maxBfields = (fmpz *) TMP_ALLOC(ctx->minfo->nfields*sizeof(fmpz));
-    maxCfields = (fmpz *) TMP_ALLOC(ctx->minfo->nfields*sizeof(fmpz));
-    for (i = 0; i < ctx->minfo->nfields; i++)
-    {
-        fmpz_init(maxBfields + i);
-        fmpz_init(maxCfields + i);
-    }
-    mpoly_max_fields_fmpz(maxBfields, B->exps, B->length, B->bits, ctx->minfo);
-    mpoly_max_fields_fmpz(maxCfields, C->exps, C->length, C->bits, ctx->minfo);
-
     switch (ctx->minfo->ord)
     {
+#if 0
         case ORD_LEX:
         {
             success = _fmpz_mpoly_mul_array_LEX(A, B, maxBfields,
@@ -1380,6 +1359,7 @@ int fmpz_mpoly_mul_array(
                                                    C, maxCfields, ctx);
             break;
         }
+#endif
         default:
         {
             success = 0;
@@ -1387,12 +1367,5 @@ int fmpz_mpoly_mul_array(
         }
     }
 
-    for (i = 0; i < ctx->minfo->nfields; i++)
-    {
-        fmpz_clear(maxBfields + i);
-        fmpz_clear(maxCfields + i);
-    }
-
-    TMP_END;
     return success;
 }
