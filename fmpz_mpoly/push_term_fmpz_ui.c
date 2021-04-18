@@ -14,19 +14,32 @@
 void _fmpz_mpoly_push_exp_ui(fmpz_mpoly_t A,
                                  const ulong * exp, const fmpz_mpoly_ctx_t ctx)
 {
-    slong N;
+    slong i;
     slong old_length = A->length;
-    flint_bitcnt_t exp_bits;
+    fmpz_t new_exp;
+    fmpz_t prime;
+    fmpz_t primepow;
 
-    exp_bits = mpoly_exp_bits_required_ui(exp, ctx->minfo);
-    exp_bits = mpoly_fix_bits(exp_bits, ctx->minfo);
-    fmpz_mpoly_fit_bits(A, exp_bits, ctx);
+    fmpz_init(new_exp);
+    fmpz_init(prime);
+    fmpz_init(primepow);
+    fmpz_one(prime);
 
-    N = mpoly_words_per_exp(A->bits, ctx->minfo);
+    for (i = 0; i < ctx->minfo->nvars; i++) {
+      fmpz_nextprime(prime, prime, 1);
+      if (exp[i] > 0) {
+        fmpz_pow_ui(primepow, prime, exp[i]);
+        fmpz_mul(new_exp, new_exp, primepow);
+      }
+    }
 
     fmpz_mpoly_fit_length(A, old_length + 1, ctx);
     A->length = old_length + 1;
-    mpoly_set_monomial_ui(A->exps + N*old_length, exp, A->bits, ctx->minfo);
+    fmpz_set(A->new_exps + A->length - 1, new_exp);
+
+    fmpz_clear(new_exp);
+    fmpz_clear(prime);
+    fmpz_clear(primepow);
 }
 
 
