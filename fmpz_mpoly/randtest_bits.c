@@ -24,6 +24,8 @@ void fmpz_mpoly_randtest_bits(fmpz_mpoly_t A, flint_rand_t state,
     {
         fmpz_randtest(A->coeffs + i, state, coeff_bits);
         fmpz_randtest_unsigned(A->new_exps + i, state, exp_bits);
+        if (fmpz_is_zero(A->new_exps + i))
+            fmpz_one(A->new_exps + i);
     }
     A->length = length;
 
