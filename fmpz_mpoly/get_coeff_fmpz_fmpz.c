@@ -14,16 +14,19 @@
 void fmpz_mpoly_get_coeff_fmpz_fmpz(fmpz_t c, const fmpz_mpoly_t A,
                                 fmpz * const * exp, const fmpz_mpoly_ctx_t ctx)
 {
-    slong index;
-    index = mpoly_monomial_index_pfmpz(A->exps, A->bits, A->length,
-                                                              exp, ctx->minfo);
-    if (index < 0)
-    {
-        fmpz_zero(c);
+    slong j;
+    slong nvars = ctx->minfo->nvars;
+    ulong * newexp;
+    TMP_INIT;
+
+    TMP_START;
+    newexp = (ulong *) TMP_ALLOC(nvars*sizeof(ulong));
+
+    for (j = 0; j < nvars; j ++) {
+        newexp[j] = fmpz_get_ui(exp[j]);
     }
-    else
-    {
-        FLINT_ASSERT(index < A->length);
-        fmpz_set(c, A->coeffs + index);
-    }
+
+    fmpz_mpoly_get_coeff_fmpz_ui(c, A, newexp, ctx);
+
+    TMP_END;
 }

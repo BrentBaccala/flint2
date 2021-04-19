@@ -23,6 +23,6 @@ void fmpz_mpoly_set_fmpz(fmpz_mpoly_t A,
 
     fmpz_mpoly_fit_length(A, 1, ctx);
     fmpz_set(A->coeffs + 0, c);
-    fmpz_set_ui(A->new_exps + 0, 0);
+    fmpz_set_ui(A->new_exps + 0, 1);
     _fmpz_mpoly_set_length(A, 1, ctx);
 }

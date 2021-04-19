@@ -15,9 +15,17 @@ void fmpz_mpoly_get_coeff_fmpz_ui(fmpz_t c, const fmpz_mpoly_t A,
                                  const ulong * exp, const fmpz_mpoly_ctx_t ctx)
 {
     slong index;
-    index = mpoly_monomial_index_ui(A->exps, A->bits, A->length,
-                                                              exp, ctx->minfo);
-    if (index < 0)
+    fmpz_t newexp;
+    int exists;
+
+    fmpz_init(newexp);
+    _fmpz_mpoly_exp_ui(newexp, exp, ctx);
+
+    exists = _fmpz_mpoly_monomial_exists(&index, A->new_exps, newexp, A->length);
+
+    fmpz_zero(newexp);
+
+    if (! exists)
     {
         fmpz_zero(c);
     }
