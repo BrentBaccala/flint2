@@ -14,32 +14,17 @@
 void _fmpz_mpoly_push_exp_ui(fmpz_mpoly_t A,
                                  const ulong * exp, const fmpz_mpoly_ctx_t ctx)
 {
-    slong i;
     slong old_length = A->length;
     fmpz_t new_exp;
-    fmpz_t prime;
-    fmpz_t primepow;
 
     fmpz_init(new_exp);
-    fmpz_init(prime);
-    fmpz_init(primepow);
-    fmpz_one(prime);
-
-    for (i = 0; i < ctx->minfo->nvars; i++) {
-      fmpz_nextprime(prime, prime, 1);
-      if (exp[i] > 0) {
-        fmpz_pow_ui(primepow, prime, exp[i]);
-        fmpz_mul(new_exp, new_exp, primepow);
-      }
-    }
+    _fmpz_mpoly_exp_ui(new_exp, exp, ctx);
 
     fmpz_mpoly_fit_length(A, old_length + 1, ctx);
     A->length = old_length + 1;
     fmpz_set(A->new_exps + A->length - 1, new_exp);
 
     fmpz_clear(new_exp);
-    fmpz_clear(prime);
-    fmpz_clear(primepow);
 }
 
 

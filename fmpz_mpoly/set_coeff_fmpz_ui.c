@@ -14,19 +14,48 @@
 void fmpz_mpoly_set_coeff_fmpz_ui(fmpz_mpoly_t poly,
                  const fmpz_t c, const ulong * exp, const fmpz_mpoly_ctx_t ctx)
 {
-    slong i, nvars = ctx->minfo->nvars;
-    fmpz * newexp;
-    TMP_INIT;
+    slong i;
+    slong index;
+    fmpz_t newexp;
+    int exists;
 
-    TMP_START;
-    newexp = (fmpz *) TMP_ALLOC(nvars*sizeof(fmpz));
-    for (i = 0; i < nvars; i++)
-        fmpz_init_set_ui(newexp + i, exp[i]);
+    fmpz_init(newexp);
+    _fmpz_mpoly_exp_ui(newexp, exp, ctx);
 
-    _fmpz_mpoly_set_coeff_fmpz_fmpz(poly, c, newexp, ctx);
+    exists = _fmpz_mpoly_monomial_exists(&index, poly->new_exps, newexp, poly->length);
 
-    for (i = 0; i < nvars; i++)
-        fmpz_clear(newexp + i);
+    if (!exists)
+    {
+        if (!fmpz_is_zero(c)) /* make new term only if coeff is nonzero*/
+        {
 
-    TMP_END;
+            fmpz_mpoly_fit_length(poly, poly->length + 1, ctx);
+
+            for (i = poly->length; i >= index + 1; i--)
+            {
+                fmpz_set(poly->coeffs + i, poly->coeffs + i - 1);
+                fmpz_set(poly->new_exps + i, poly->new_exps + i - 1);
+            }
+
+            fmpz_set(poly->coeffs + index, c);
+            fmpz_set(poly->new_exps + index, newexp);
+
+            poly->length++; /* safe because length is increasing */
+        }
+    } else if (fmpz_is_zero(c)) /* zero coeff, remove term */
+    {
+        for (i = index; i < poly->length - 1; i++)
+        {
+            fmpz_set(poly->coeffs + i, poly->coeffs + i + 1);
+            fmpz_set(poly->new_exps + i, poly->new_exps + i + 1);
+        }
+
+        _fmpz_mpoly_set_length(poly, poly->length - 1, ctx);
+
+    } else /* term with that monomial exists, coeff is nonzero */
+    {
+        fmpz_set(poly->coeffs + index, c);
+    }
+
+    fmpz_zero(newexp);
 }

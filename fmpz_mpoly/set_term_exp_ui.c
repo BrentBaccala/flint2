@@ -15,18 +15,15 @@
 void fmpz_mpoly_set_term_exp_ui(fmpz_mpoly_t A, 
                        slong i, const ulong * exp, const fmpz_mpoly_ctx_t ctx)
 {
-    slong N;
-    flint_bitcnt_t exp_bits;
+    fmpz_t newexp;
 
     if ((ulong) i >= (ulong) A->length)
     {
         flint_throw(FLINT_ERROR, "Index out of range in fmpz_mpoly_set_term_exp_ui");
     }
 
-    exp_bits = mpoly_exp_bits_required_ui(exp, ctx->minfo);
-    exp_bits = mpoly_fix_bits(exp_bits, ctx->minfo);
-    fmpz_mpoly_fit_bits(A, exp_bits, ctx);
-
-    N = mpoly_words_per_exp(A->bits, ctx->minfo);
-    mpoly_set_monomial_ui(A->exps + N*i, exp, A->bits, ctx->minfo);
+    fmpz_init(newexp);
+    _fmpz_mpoly_exp_ui(newexp, exp, ctx);
+    fmpz_set(A->new_exps + i, newexp);
+    fmpz_zero(newexp);
 }
