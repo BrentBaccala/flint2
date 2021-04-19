@@ -134,17 +134,23 @@ void
 _fmpz_mpoly_quicksort (void *const pbase, size_t total_elems, size_t size,
 	    __compar_d_fn_t cmp, __swap_d_fn_t swap, void *arg);
 
-int _fmpz_mpoly_compare (const fmpz *a, const fmpz *b, fmpz_mpoly_t A)
+int _fmpz_mpoly_compare (const void * a, const void * b, void * A)
 {
+  const fmpz * aa = (fmpz *) a;
+  const fmpz * bb = (fmpz *) b;
+
   return -fmpz_cmp(a, b);
 }
 
-void _fmpz_mpoly_swap (fmpz *a, fmpz *b, fmpz_mpoly_t A)
+void _fmpz_mpoly_swap (void * a, void * b, void * A)
 {
-  fmpz * aa = (a - A->new_exps + A->coeffs);
-  fmpz * bb = (b - A->new_exps + A->coeffs);
-  fmpz_swap(a, b);
+  fmpz * aa = (fmpz *) a;
+  fmpz * bb = (fmpz *) b;
+  fmpz_mpoly_struct * AA = (fmpz_mpoly_struct *) A;
+  fmpz * aaa = (aa - AA->new_exps + AA->coeffs);
+  fmpz * bbb = (bb - AA->new_exps + AA->coeffs);
   fmpz_swap(aa, bb);
+  fmpz_swap(aaa, bbb);
 }
 
 /*
