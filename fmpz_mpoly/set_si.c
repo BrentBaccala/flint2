@@ -14,8 +14,6 @@
 
 void fmpz_mpoly_set_si(fmpz_mpoly_t A, slong c, const fmpz_mpoly_ctx_t ctx)
 {
-    slong N = mpoly_words_per_exp(A->bits, ctx->minfo);
-
     if (c == 0)
     {
         _fmpz_mpoly_set_length(A, 0, ctx);
@@ -24,6 +22,6 @@ void fmpz_mpoly_set_si(fmpz_mpoly_t A, slong c, const fmpz_mpoly_ctx_t ctx)
 
     fmpz_mpoly_fit_length(A, 1, ctx);
     fmpz_set_si(A->coeffs + 0, c);
-    mpoly_monomial_zero(A->exps + N*0, N);
+    fmpz_set_ui(A->new_exps + 0, 1);
     _fmpz_mpoly_set_length(A, 1, ctx);
 }
