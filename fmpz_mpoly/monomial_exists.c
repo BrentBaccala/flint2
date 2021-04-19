@@ -27,9 +27,10 @@ int _fmpz_mpoly_monomial_exists(slong * index, const fmpz * poly_exps,
           __u = __idx;
         else if (__comparison > 0)
           __l = __idx + 1;
-        else
+        else {
           *index = __idx;
           return 1;
+        }
     }
 
     *index = __l;
