@@ -80,7 +80,7 @@ typedef struct
 
 void
 _fmpz_mpoly_quicksort (void *const pbase, size_t total_elems, size_t size,
-	    __compar_d_fn_t cmp, __swap_d_fn_t swap, void *arg)
+	    __compar_d_fn_t cmp, __swap_d_fn_t swap, __swap_d_fn_t rotate_right, void *arg)
 {
   char *base_ptr = (char *) pbase;
 
@@ -223,20 +223,7 @@ _fmpz_mpoly_quicksort (void *const pbase, size_t total_elems, size_t size,
 
 	tmp_ptr += size;
         if (tmp_ptr != run_ptr)
-          {
-            char *trav;
-
-	    trav = run_ptr + size;
-	    while (--trav >= run_ptr)
-              {
-                char c = *trav;
-                char *hi, *lo;
-
-                for (hi = lo = trav; (lo -= size) >= tmp_ptr; hi = lo)
-                  *hi = *lo;
-                *hi = c;
-              }
-          }
+          (*rotate_right) ((void *) tmp_ptr, (void *) run_ptr, arg);
       }
   }
 }

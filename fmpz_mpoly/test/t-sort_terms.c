@@ -53,7 +53,7 @@ main(void)
                 a = n_randint(state, f->length);
                 b = n_randint(state, f->length);
                 fmpz_swap(f->coeffs + a, f->coeffs + b);
-                mpoly_monomial_swap(f->exps + N*a, f->exps + N*b, N);
+                fmpz_swap(f->new_exps + a, f->new_exps + b);
             }
 
             fmpz_mpoly_sort_terms(f, ctx);

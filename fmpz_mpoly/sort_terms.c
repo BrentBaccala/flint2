@@ -132,14 +132,14 @@ typedef void (*__swap_d_fn_t) (void *, void *, void *);
 
 void
 _fmpz_mpoly_quicksort (void *const pbase, size_t total_elems, size_t size,
-	    __compar_d_fn_t cmp, __swap_d_fn_t swap, void *arg);
+	    __compar_d_fn_t cmp, __swap_d_fn_t swap, __swap_d_fn_t rotate_right, void *arg);
 
 int _fmpz_mpoly_compare (const void * a, const void * b, void * A)
 {
   const fmpz * aa = (fmpz *) a;
   const fmpz * bb = (fmpz *) b;
 
-  return -fmpz_cmp(a, b);
+  return -fmpz_cmp(aa, bb);
 }
 
 void _fmpz_mpoly_swap (void * a, void * b, void * A)
@@ -147,10 +147,34 @@ void _fmpz_mpoly_swap (void * a, void * b, void * A)
   fmpz * aa = (fmpz *) a;
   fmpz * bb = (fmpz *) b;
   fmpz_mpoly_struct * AA = (fmpz_mpoly_struct *) A;
-  fmpz * aaa = (aa - AA->new_exps + AA->coeffs);
-  fmpz * bbb = (bb - AA->new_exps + AA->coeffs);
+  fmpz * aaa = ((aa - AA->new_exps) + AA->coeffs);
+  fmpz * bbb = ((bb - AA->new_exps) + AA->coeffs);
   fmpz_swap(aa, bb);
   fmpz_swap(aaa, bbb);
+}
+
+void _fmpz_mpoly_rotate_right (void * a, void * b, void * A)
+{
+  fmpz * aa = (fmpz *) a;
+  fmpz * bb = (fmpz *) b;
+  fmpz_mpoly_struct * AA = (fmpz_mpoly_struct *) A;
+  fmpz * aaa = ((aa - AA->new_exps) + AA->coeffs);
+  fmpz * bbb = ((bb - AA->new_exps) + AA->coeffs);
+  fmpz t;
+
+  t = *bb;
+  while (bb > aa) {
+    *bb = *(bb-1);
+    bb --;
+  }
+  *aa = t;
+
+  t = *bbb;
+  while (bbb > aaa) {
+    *bbb = *(bbb-1);
+    bbb --;
+  }
+  *aaa = t;
 }
 
 /*
@@ -160,5 +184,5 @@ void _fmpz_mpoly_swap (void * a, void * b, void * A)
 void fmpz_mpoly_sort_terms(fmpz_mpoly_t A, const fmpz_mpoly_ctx_t ctx)
 {
     _fmpz_mpoly_quicksort(A->new_exps, A->length, sizeof(fmpz),
-			  _fmpz_mpoly_compare, _fmpz_mpoly_swap, A);
+			  _fmpz_mpoly_compare, _fmpz_mpoly_swap, _fmpz_mpoly_rotate_right, A);
 }
