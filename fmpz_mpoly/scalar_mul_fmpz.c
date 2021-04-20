@@ -24,11 +24,8 @@ void fmpz_mpoly_scalar_mul_fmpz(fmpz_mpoly_t A, const fmpz_mpoly_t B,
 
     if (A != B)
     {
-        N = mpoly_words_per_exp(B->bits, ctx->minfo);
         fmpz_mpoly_fit_length(A, B->length, ctx);
-        fmpz_mpoly_fit_bits(A, B->bits, ctx);
-        A->bits = B->bits;
-        mpn_copyi(A->exps, B->exps, N*B->length);
+        _fmpz_vec_set(A->new_exps, B->new_exps, B->length);
     }
     _fmpz_vec_scalar_mul_fmpz(A->coeffs, B->coeffs, B->length, c);
     _fmpz_mpoly_set_length(A, B->length, ctx);
