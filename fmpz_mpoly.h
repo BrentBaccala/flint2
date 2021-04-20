@@ -238,8 +238,8 @@ FLINT_DLL int fmpz_mpoly_set_str_pretty(fmpz_mpoly_t A, const char * str,
                                   const char ** x, const fmpz_mpoly_ctx_t ctx);
 
 FLINT_DLL char * _fmpz_mpoly_get_str_pretty(const fmpz * poly,
-                          const ulong * exps, slong len, const char ** x, 
-                                           slong bits, const mpoly_ctx_t mctx);
+                          const fmpz * exps, slong len, const char ** x, 
+                                           const mpoly_ctx_t mctx);
 
 FLINT_DLL char * fmpz_mpoly_get_str_pretty(const fmpz_mpoly_t A,
                                   const char ** x, const fmpz_mpoly_ctx_t ctx);
@@ -608,6 +608,8 @@ FLINT_DLL void _fmpz_mpoly_exp_ui(fmpz_t new_exp, const ulong * exp, const fmpz_
 
 FLINT_DLL int _fmpz_mpoly_monomial_exists(slong * index, const fmpz * poly_exps,
                  const fmpz_t exp, slong len);
+
+FLINT_DLL void fmpz_mpoly_get_monomial_ui(ulong * ulong_exp, const fmpz_t expin, const mpoly_ctx_t ctx);
 
 /* Random generation *********************************************************/
 
