@@ -22,6 +22,5 @@ void fmpz_mpoly_get_term_exp_ui(ulong * exp, const fmpz_mpoly_t A,
         flint_throw(FLINT_ERROR, "Index out of range in fmpz_mpoly_get_term_exp_ui");
     }
 
-    N = mpoly_words_per_exp(A->bits, ctx->minfo);
-    mpoly_get_monomial_ui(exp, A->exps + N*i, A->bits, ctx->minfo);
+    fmpz_mpoly_get_monomial_ui(exp, A->new_exps + i, ctx->minfo);
 }

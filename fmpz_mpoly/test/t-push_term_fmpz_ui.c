@@ -46,7 +46,7 @@ main(void)
 
         len = n_randint(state, 20);
         coeff_bits = n_randint(state, 100) + 1;
-        exp_bits = n_randint(state, FLINT_BITS + 1);
+        exp_bits = n_randint(state, 7) + 1;
 
         fmpz_mpoly_zero(f1, ctx);
         fmpz_mpoly_zero(f2, ctx);
