@@ -41,7 +41,7 @@ main(void)
         len = n_randint(state, 100);
         coeff_bits = n_randint(state, 200);
         exp_bits = n_randint(state, 200) + 2;
-        exp_bits2 = n_randint(state, 200) + 2;
+        exp_bits2 = n_randint(state, 7) + 2;
 
         fmpz_mpoly_randtest_bits(f, state, len, coeff_bits, exp_bits, ctx);
 
@@ -89,7 +89,7 @@ main(void)
     {
         fmpz_mpoly_ctx_t ctx;
         fmpz_mpoly_t f;
-        flint_bitcnt_t coeff_bits, exp_bits;
+        flint_bitcnt_t coeff_bits, exp_bits, exp_bits2;
         slong len;
         fmpz_t c, d;
 
@@ -102,6 +102,7 @@ main(void)
         len = n_randint(state, 100);
         coeff_bits = n_randint(state, 200);
         exp_bits = n_randint(state, 200) + 2;
+        exp_bits2 = n_randint(state, 7) + 2;
 
         fmpz_mpoly_randtest_bits(f, state, len, coeff_bits, exp_bits, ctx);
 
@@ -111,7 +112,7 @@ main(void)
 
             fmpz_randtest_unsigned(c, state, 200);
             for (k = 0; k < fmpz_mpoly_ctx_nvars(ctx); k++)
-                exp[k] = n_randtest(state);
+                exp[k] = n_urandint(state, 1 << exp_bits2);
 
             fmpz_mpoly_set_coeff_fmpz_ui(f, c, exp, ctx);
             fmpz_mpoly_assert_canonical(f, ctx);
