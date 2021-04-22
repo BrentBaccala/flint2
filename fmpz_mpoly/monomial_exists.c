@@ -22,7 +22,7 @@ int _fmpz_mpoly_monomial_exists(slong * index, const fmpz * poly_exps,
     __u = len;
     while (__l < __u) {
         __idx = (__l + __u) / 2;
-        __comparison = fmpz_cmp (exp, poly_exps + __idx);
+        __comparison = - fmpz_cmp (exp, poly_exps + __idx);
         if (__comparison < 0)
           __u = __idx;
         else if (__comparison > 0)
