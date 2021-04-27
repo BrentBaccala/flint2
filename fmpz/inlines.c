@@ -84,32 +84,32 @@ void __fmpz_clear(fmpz_t f)
 	_fmpz_demote(f);
 }
 
-int __fmpz_lt(fmpz_t f, fmpz_t g)
+int __fmpz_lt(const fmpz_t f, const fmpz_t g)
 {
    return fmpz_cmp(f, g) < 0;
 }
 
-int __fmpz_gt(fmpz_t f, fmpz_t g)
+int __fmpz_gt(const fmpz_t f, const fmpz_t g)
 {
    return fmpz_cmp(f, g) > 0;
 }
 
-int __fmpz_lte(fmpz_t f, fmpz_t g)
+int __fmpz_lte(const fmpz_t f, const fmpz_t g)
 {
    return fmpz_cmp(f, g) <= 0;
 }
 
-int __fmpz_gte(fmpz_t f, fmpz_t g)
+int __fmpz_gte(const fmpz_t f, const fmpz_t g)
 {
    return fmpz_cmp(f, g) >= 0;
 }
 
-int __fmpz_eq(fmpz_t f, fmpz_t g)
+int __fmpz_eq(const fmpz_t f, const fmpz_t g)
 {
    return fmpz_cmp(f, g) == 0;
 }
 
-int __fmpz_neq(fmpz_t f, fmpz_t g)
+int __fmpz_neq(const fmpz_t f, const fmpz_t g)
 {
    return fmpz_cmp(f, g) != 0;
 }
