@@ -68,7 +68,7 @@ void * _fmpz_mpoly_heap_pop(fmpz_mpoly_heap_s * heap, slong * heap_len)
 }
 
 MPOLY_INLINE
-int _fmpz_mpoly_heap_insert(fmpz_mpoly_heap_s * heap, fmpz_t exp, void * x,
+int _fmpz_mpoly_heap_insert(fmpz_mpoly_heap_s * heap, const fmpz_t exp, void * x,
        slong * next_loc, slong * heap_len)
 {
    slong i = *heap_len, j, n = *heap_len;
