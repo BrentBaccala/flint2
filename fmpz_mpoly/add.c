@@ -41,9 +41,10 @@ slong _fmpz_mpoly_add_new(fmpz * poly1, fmpz * exps1,
       } else if (cmp == 0)
       {
          fmpz_add(poly1 + k, poly2 + i, poly3 + j);
-         fmpz_set(exps1 + k, exps2 + i);
          if (fmpz_is_zero(poly1 + k))
             k--;
+         else
+            fmpz_set(exps1 + k, exps2 + i);
          i++;
          j++;
       } else
