@@ -29,7 +29,7 @@ void fmpz_mpoly_sub_fmpz(fmpz_mpoly_t A, const fmpz_mpoly_t B,
 
     if (!fmpz_is_zero(c))
     {
-        if (fmpz_is_zero(B->new_exps + (Blen - 1)))
+        if (fmpz_is_one(B->new_exps + (Blen - 1)))
         {
             if (A != B)
             {
@@ -61,7 +61,7 @@ void fmpz_mpoly_sub_fmpz(fmpz_mpoly_t A, const fmpz_mpoly_t B,
                 }
             } 
 
-            fmpz_zero(A->new_exps + Blen);
+            fmpz_one(A->new_exps + Blen);
 
             fmpz_neg(A->coeffs + Blen, c);
 
