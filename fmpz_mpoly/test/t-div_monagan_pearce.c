@@ -143,9 +143,9 @@ main(void)
         strides = (fmpz *) flint_malloc(ctx->minfo->nvars*sizeof(fmpz));
         for (j = 0; j < ctx->minfo->nvars; j++)
         {
-            exp_bound[j] = UWORD(1) << (FLINT_BITS - 1);
-            exp_bound1[j] = n_randint(state, max_bound) + 1;
-            exp_bound2[j] = n_randint(state, max_bound) + 1;
+            exp_bound[j] = max_bound;
+            exp_bound1[j] = max_bound;
+            exp_bound2[j] = max_bound;
             fmpz_init(shifts + j);
             fmpz_init(strides + j);
             fmpz_randtest_unsigned(shifts + j, state, 100);
@@ -161,9 +161,6 @@ main(void)
             } while (g->length == 0);
             fmpz_mpoly_randtest_bounds(h, state, len, coeff_bits, exp_bound, ctx);
             fmpz_mpoly_randtest_bounds(k, state, len, coeff_bits, exp_bound, ctx);
-
-            fmpz_mpoly_inflate(f, f, shifts, strides, ctx);
-            fmpz_mpoly_inflate(g, g, shifts, strides, ctx);
 
             fmpz_mpoly_divrem_monagan_pearce(h, r, f, g, ctx);
             fmpz_mpoly_assert_canonical(h, ctx);
@@ -232,6 +229,9 @@ main(void)
             exp_bound[j] = UWORD(1) << (FLINT_BITS - 1);
             exp_bound1[j] = n_randint(state, max_bound) + 1;
             exp_bound2[j] = n_randint(state, max_bound) + 1;
+            exp_bound[j] = max_bound;
+            exp_bound1[j] = max_bound;
+            exp_bound2[j] = max_bound;
             fmpz_init(shifts + j);
             fmpz_init(strides + j);
             fmpz_randtest_unsigned(shifts + j, state, 100);
@@ -246,9 +246,6 @@ main(void)
                 fmpz_mpoly_randtest_bounds(g, state, len2, coeff_bits + 1, exp_bound2, ctx);
             } while (g->length == 0);
             fmpz_mpoly_randtest_bounds(h, state, len, coeff_bits, exp_bound, ctx);
-
-            fmpz_mpoly_inflate(f, f, shifts, strides, ctx);
-            fmpz_mpoly_inflate(g, g, shifts, strides, ctx);
 
             fmpz_mpoly_divrem_monagan_pearce(h, r, f, g, ctx);
             fmpz_mpoly_assert_canonical(h, ctx);
@@ -313,9 +310,9 @@ main(void)
         strides = (fmpz *) flint_malloc(ctx->minfo->nvars*sizeof(fmpz));
         for (j = 0; j < ctx->minfo->nvars; j++)
         {
-            exp_bound[j] = UWORD(1) << (FLINT_BITS - 1);
-            exp_bound1[j] = n_randint(state, max_bound) + 1;
-            exp_bound2[j] = n_randint(state, max_bound) + 1;
+            exp_bound[j] = max_bound;
+            exp_bound1[j] = max_bound;
+            exp_bound2[j] = max_bound;
             fmpz_init(shifts + j);
             fmpz_init(strides + j);
             fmpz_randtest_unsigned(shifts + j, state, 100);
@@ -330,9 +327,6 @@ main(void)
                 fmpz_mpoly_randtest_bounds(g, state, len2, coeff_bits + 1, exp_bound2, ctx);
             } while (g->length == 0);
             fmpz_mpoly_randtest_bounds(h, state, len, coeff_bits, exp_bound, ctx);
-
-            fmpz_mpoly_inflate(f, f, shifts, strides, ctx);
-            fmpz_mpoly_inflate(g, g, shifts, strides, ctx);
 
             fmpz_mpoly_divrem_monagan_pearce(h, r, f, g, ctx);
             fmpz_mpoly_assert_canonical(h, ctx);
