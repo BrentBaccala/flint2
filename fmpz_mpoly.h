@@ -881,9 +881,9 @@ FLINT_DLL void fmpz_mpoly_quasidivrem_ideal(fmpz_t scale,
 
 
 FLINT_DLL slong _fmpz_mpoly_div_monagan_pearce(fmpz ** polyq,
-           ulong ** expq, slong * allocq, const fmpz * poly2,
-   const ulong * exp2, slong len2, const fmpz * poly3, const ulong * exp3, 
-                       slong len3, slong bits, slong N, const ulong * cmpmask);
+           fmpz ** expq, slong * allocq, const fmpz * poly2,
+   const fmpz * exp2, slong len2, const fmpz * poly3, const fmpz * exp3,
+                       slong len3);
 
 FLINT_DLL void fmpz_mpoly_div_monagan_pearce(fmpz_mpoly_t q,
                      const fmpz_mpoly_t poly2, const fmpz_mpoly_t poly3,
