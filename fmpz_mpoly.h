@@ -890,10 +890,9 @@ FLINT_DLL void fmpz_mpoly_div_monagan_pearce(fmpz_mpoly_t q,
                                                    const fmpz_mpoly_ctx_t ctx);
 
 FLINT_DLL slong _fmpz_mpoly_divrem_monagan_pearce(slong * lenr,
-  fmpz ** polyq, ulong ** expq, slong * allocq, fmpz ** polyr,
-                  ulong ** expr, slong * allocr, const fmpz * poly2,
-   const ulong * exp2, slong len2, const fmpz * poly3, const ulong * exp3, 
-                       slong len3, slong bits, slong N, const ulong * cmpmask);
+  fmpz ** polyq, fmpz ** expq, slong * allocq, fmpz ** polyr,
+                  fmpz ** expr, slong * allocr, const fmpz * poly2,
+   const fmpz * exp2, slong len2, const fmpz * poly3, const fmpz * exp3, slong len3);
 
 FLINT_DLL void fmpz_mpoly_divrem_monagan_pearce(fmpz_mpoly_t q, fmpz_mpoly_t r,
                   const fmpz_mpoly_t poly2, const fmpz_mpoly_t poly3,
