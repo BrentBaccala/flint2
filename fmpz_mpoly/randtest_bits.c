@@ -16,18 +16,39 @@ void fmpz_mpoly_randtest_bits(fmpz_mpoly_t A, flint_rand_t state,
                                                     const fmpz_mpoly_ctx_t ctx)
 {
     slong i;
+    ulong * ulong_exp;
+    fmpz_t exp;
+    TMP_INIT;
 
     fmpz_mpoly_zero(A, ctx);
     fmpz_mpoly_fit_length(A, length, ctx);
 
+    TMP_START;
+    ulong_exp = (ulong *) TMP_ALLOC(ctx->minfo->nvars*sizeof(ulong));
+    fmpz_init(exp);
+
     for (i = 0; i < length; i++)
     {
         fmpz_randtest(A->coeffs + i, state, coeff_bits);
-        fmpz_randtest_unsigned(A->new_exps + i, state, exp_bits);
-        if (fmpz_is_zero(A->new_exps + i))
-            fmpz_one(A->new_exps + i);
+
+        /* Generate a random bit pattern for our exponent(s), but its
+         * factorization might contain a prime that's larger than any
+         * of our variable primes, so unpack it and repack it to
+         * ensure that all of our monomials correspond to unique
+         * exponent numbers.
+         */
+        fmpz_randtest_unsigned(exp, state, exp_bits);
+        if (fmpz_is_zero(exp))
+            fmpz_one(exp);
+	fmpz_mpoly_get_monomial_ui(ulong_exp, exp, ctx->minfo);
+	_fmpz_mpoly_exp_ui(A->new_exps + i, ulong_exp, ctx);
+
     }
-    A->length = length;
+
+    _fmpz_mpoly_set_length(A, length, ctx);
+
+    TMP_END;
+    fmpz_clear(exp);
 
     fmpz_mpoly_sort_terms(A, ctx);
     fmpz_mpoly_combine_like_terms(A, ctx);
