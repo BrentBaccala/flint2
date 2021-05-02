@@ -163,21 +163,15 @@ static void _mpoly_rbnode_clear_mp(
 void fmpz_mpoly_to_univar(fmpz_mpoly_univar_t A, const fmpz_mpoly_t B,
                                          slong var, const fmpz_mpoly_ctx_t ctx)
 {
-    flint_bitcnt_t bits = B->bits;
-    slong N = mpoly_words_per_exp(bits, ctx->minfo);
-    slong shift, off;
     slong Blen = B->length;
-    const fmpz * Bcoeff = B->coeffs;
-    const ulong * Bexp = B->exps;
     slong i;
     int new;
-    ulong * one;
     mpoly_rbtree_t tree;
     mpoly_rbnode_struct * node;
     fmpz_mpoly_struct * d;
 #define LUT_limit (48)
     fmpz_mpoly_struct LUT[LUT_limit];
-    TMP_INIT;
+    fmpz_t prime;
 
     if (B->length == 0)
     {
@@ -185,107 +179,74 @@ void fmpz_mpoly_to_univar(fmpz_mpoly_univar_t A, const fmpz_mpoly_t B,
         return;
     }
 
-    TMP_START;
+    /* Compute prime used to represent var */
+    fmpz_init(prime);
+    fmpz_one(prime);
 
-    one = (ulong*) TMP_ALLOC(N*sizeof(ulong));
+    for (i = 0; i < var; i++) {
+        fmpz_nextprime(prime, prime, 1);
+    }
+
+    /* Initialize both an RB tree and a lookup table.
+     * LUT will be used for powers less than LUT_limit; RB tree for larger powers.
+     */
 
     mpoly_rbtree_init(tree);
 
-    if (bits <= FLINT_BITS)
+    for (i = 0; i < LUT_limit; i++)
+        fmpz_mpoly_init3(LUT + i, 4, 0, ctx);
+
+    /* fill in tree/LUT from B */
+    for (i = 0; i < Blen; i++)
     {
-        ulong mask = (-UWORD(1)) >> (FLINT_BITS - bits);
-        mpoly_gen_monomial_offset_shift_sp(one, &off, &shift,
-                                                        var, bits, ctx->minfo);
-        for (i = 0; i < LUT_limit; i++)
-            fmpz_mpoly_init3(LUT + i, 4, bits, ctx);
-
-        /* fill in tree/LUT from B */
-        for (i = 0; i < Blen; i++)
+        ulong k = fmpz_mpoly_get_term_var_exp_ui(B, i, var, ctx);
+        if (k < LUT_limit)
         {
-            ulong k = (Bexp[N*i + off] >> shift) & mask;
-            if (k < LUT_limit)
-            {
-                d = LUT + k;
-            }
-            else
-            {
-                node = mpoly_rbtree_get(&new, tree, k);
-                if (new)
-                {
-                    d = flint_malloc(sizeof(fmpz_mpoly_struct));
-                    fmpz_mpoly_init3(d, 4, bits, ctx);
-                    node->data = d;
-                }
-                else
-                {
-                    d = node->data;
-                }
-            }
-            fmpz_mpoly_fit_length(d, d->length + 1, ctx);
-            fmpz_set(d->coeffs + d->length, Bcoeff + i);
-            mpoly_monomial_msub(d->exps + N*d->length, Bexp + N*i, k, one, N);
-            d->length++;
+            d = LUT + k;
         }
-
-        /* clear out tree to A */
-        fmpz_mpoly_univar_fit_length(A, tree->size + LUT_limit, ctx);
-        A->length = 0;
-        if (tree->size > 0)
-            _mpoly_rbnode_clear_sp(A, tree, tree->head->left);
-
-        for (i = LUT_limit - 1; i >= 0; i--)
+        else
         {
-            d = LUT + i;
-            if (d->length > 0)
-            {
-                FLINT_ASSERT(A->length < A->alloc);
-                fmpz_set_si(A->exps + A->length, i);
-                fmpz_mpoly_swap(A->coeffs + A->length, d, ctx);
-                A->length++;
-            }
-            fmpz_mpoly_clear(d, ctx);
-        }
-    }
-    else
-    {
-        fmpz_t k;
-        fmpz_init(k);
-
-        off = mpoly_gen_monomial_offset_mp(one, var, bits, ctx->minfo);
-
-        /* fill in tree from B */
-        for (i = 0; i < Blen; i++)
-        {
-            fmpz_set_ui_array(k, Bexp + N*i + off, bits/FLINT_BITS);
-
-            node = mpoly_rbtree_get_fmpz(&new, tree, k);
+            node = mpoly_rbtree_get(&new, tree, k);
             if (new)
             {
                 d = flint_malloc(sizeof(fmpz_mpoly_struct));
-                fmpz_mpoly_init3(d, 4, bits, ctx);
+                fmpz_mpoly_init3(d, 4, 0, ctx);
                 node->data = d;
             }
             else
             {
                 d = node->data;
             }
-            fmpz_mpoly_fit_length(d, d->length + 1, ctx);
-            fmpz_set(d->coeffs + d->length, Bcoeff + i);
-            mpoly_monomial_msub_ui_array(d->exps + N*d->length, Bexp + N*i,
-                                    Bexp + N*i + off, bits/FLINT_BITS, one, N);
-            d->length++;
         }
+        fmpz_mpoly_fit_length(d, d->length + 1, ctx);
+        fmpz_set(d->coeffs + d->length, B->coeffs + i);
 
-        /* clear out tree to A */
-        fmpz_mpoly_univar_fit_length(A, tree->size, ctx);
-        A->length = 0;
-        FLINT_ASSERT(tree->size > 0);
-        _mpoly_rbnode_clear_mp(A, tree, tree->head->left);
+        fmpz_pow_ui(d->new_exps + d->length, prime, k);
+        fmpz_divexact(d->new_exps + d->length, B->new_exps + i, d->new_exps + d->length);
 
-        fmpz_clear(k);
+        d->length++;
     }
 
-    TMP_END;
+    /* clear out tree to A */
+    fmpz_mpoly_univar_fit_length(A, tree->size + LUT_limit, ctx);
+    A->length = 0;
+    if (tree->size > 0)
+        _mpoly_rbnode_clear_sp(A, tree, tree->head->left);
+
+    for (i = LUT_limit - 1; i >= 0; i--)
+    {
+        d = LUT + i;
+        if (d->length > 0)
+        {
+            FLINT_ASSERT(A->length < A->alloc);
+            fmpz_set_si(A->exps + A->length, i);
+            fmpz_mpoly_swap(A->coeffs + A->length, d, ctx);
+            A->length++;
+        }
+        fmpz_mpoly_clear(d, ctx);
+    }
+
+    fmpz_clear(prime);
 }
 
 

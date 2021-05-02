@@ -502,8 +502,11 @@ static int _try_missing_var(
     }
 
     fmpz_mpoly_swap(G, tG, ctx);
-    _mpoly_gen_shift_left(G->exps, G->bits, G->length,
-                                   var, FLINT_MIN(Ashift, Bshift), ctx->minfo);
+    if (FLINT_MIN(Ashift, Bshift) > 0) {
+        fmpz_mpoly_gen(tG, var, ctx);
+        fmpz_mpoly_pow_ui(tG, tG, FLINT_MIN(Ashift, Bshift), ctx);
+        fmpz_mpoly_mul(G, G, tG, ctx);
+    }
 
 cleanup:
 
