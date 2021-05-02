@@ -34,4 +34,5 @@ void fmpz_mpoly_get_monomial_ui(ulong * ulong_exp, const fmpz_t expin, const mpo
     }
 
     fmpz_clear(prime);
+    fmpz_clear(exp);
 }

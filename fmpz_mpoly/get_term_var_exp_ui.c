@@ -15,13 +15,32 @@
 ulong fmpz_mpoly_get_term_var_exp_ui(const fmpz_mpoly_t A, slong i,
                                          slong var, const fmpz_mpoly_ctx_t ctx)
 {
-    slong N;
+    ulong result = 0;
+    fmpz_t prime;
+    fmpz_t exp;
 
     if ((ulong) i >= (ulong) A->length)
     {
         flint_throw(FLINT_ERROR, "Index out of range in fmpz_mpoly_get_term_var_exp_ui");
     }
 
-    N = mpoly_words_per_exp(A->bits, ctx->minfo);
-    return mpoly_get_monomial_var_exp_ui(A->exps + N*i, var, A->bits, ctx->minfo);
+    fmpz_init(prime);
+    fmpz_one(prime);
+
+    fmpz_init(exp);
+    fmpz_set(exp, A->new_exps + i);
+
+    do {
+        fmpz_nextprime(prime, prime, 1);
+    } while (var--);
+
+    while (fmpz_divisible(exp, prime)) {
+        result ++;
+        fmpz_divexact(exp, exp, prime);
+    }
+
+    fmpz_clear(prime);
+    fmpz_clear(exp);
+
+    return result;
 }

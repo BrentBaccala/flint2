@@ -1066,13 +1066,13 @@ calculate_trivial_gcd:
         _fmpz_mpoly_to_fmpz_poly_deflate(b, B, v_in_both,
                                                  I->Bmin_exp, I->Gstride, ctx);
         fmpz_poly_gcd(g, a, b);
-        _fmpz_mpoly_from_fmpz_poly_inflate(G, I->Gbits, g, v_in_both,
+        _fmpz_mpoly_from_fmpz_poly_inflate(G, g, v_in_both,
                                                  I->Gmin_exp, I->Gstride, ctx);
         fmpz_poly_div(t, a, g);
-        _fmpz_mpoly_from_fmpz_poly_inflate(Abar, I->Abarbits, t, v_in_both,
+        _fmpz_mpoly_from_fmpz_poly_inflate(Abar, t, v_in_both,
                                               I->Abarmin_exp, I->Gstride, ctx);
         fmpz_poly_div(t, b, g);
-        _fmpz_mpoly_from_fmpz_poly_inflate(Bbar, I->Bbarbits, t, v_in_both,
+        _fmpz_mpoly_from_fmpz_poly_inflate(Bbar, t, v_in_both,
                                               I->Bbarmin_exp, I->Gstride, ctx);
         fmpz_poly_clear(a);
         fmpz_poly_clear(b);

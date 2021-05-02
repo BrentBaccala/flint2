@@ -369,7 +369,7 @@ int fmpz_mpoly_gcd_zippel(
         _fmpz_mpoly_to_fmpz_poly_deflate(a, A, 0, shift, stride, ctx);
         _fmpz_mpoly_to_fmpz_poly_deflate(b, B, 0, shift, stride, ctx);
         fmpz_poly_gcd(g, a, b);
-        _fmpz_mpoly_from_fmpz_poly_inflate(G, A->bits, g, 0, shift, stride, ctx);
+        _fmpz_mpoly_from_fmpz_poly_inflate(G, g, 0, shift, stride, ctx);
         fmpz_poly_clear(a);
         fmpz_poly_clear(b);
         fmpz_poly_clear(g);

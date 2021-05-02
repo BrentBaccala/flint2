@@ -113,50 +113,26 @@ void _fmpz_mpoly_to_fmpz_poly_deflate(
     const ulong * Bstride,
     const fmpz_mpoly_ctx_t ctx)
 {
-    ulong mask;
-    slong i, shift, off, N;
+    slong i;
     slong len = B->length;
-    fmpz * coeff = B->coeffs;
-    ulong * exp = B->exps;
     ulong var_shift, var_stride;
-    flint_bitcnt_t bits = B->bits;
 
     FLINT_ASSERT(len > 0);
-    FLINT_ASSERT(bits <= FLINT_BITS);
-
-    N = mpoly_words_per_exp(bits, ctx->minfo);
-    mpoly_gen_offset_shift_sp(&off, &shift, var, bits, ctx->minfo);
 
     fmpz_poly_zero(A);
-    mask = (-UWORD(1)) >> (FLINT_BITS - bits);
     var_shift = Bshift[var];
     var_stride = Bstride[var];
     for (i = 0; i < len; i++)
     {
-        ulong k = (exp[N*i + off] >> shift) & mask;
+        ulong k = fmpz_mpoly_get_term_var_exp_ui(B, i, var, ctx);
         FLINT_ASSERT(k >= var_shift);
         k -= var_shift;
         if (k != 0)
         {
             k /= var_stride;
         }
-        fmpz_poly_set_coeff_fmpz(A, k, coeff + i);
+        fmpz_poly_set_coeff_fmpz(A, k, B->coeffs + i);
     }
-
-#if WANT_ASSERT
-    for (i = 0; i < len; i++)
-    {
-        slong v;
-        for (v = 0; v < ctx->minfo->nvars; v++)
-        {
-            ulong k;
-            mpoly_gen_offset_shift_sp(&off, &shift, v, bits, ctx->minfo);
-            k = (exp[N*i + off] >> shift) & mask;
-            FLINT_ASSERT(   (v == var && k >= Bshift[v])
-                         || (v != var && k == Bshift[v]));
-        }
-    }
-#endif
 }
 
 /*
@@ -165,62 +141,42 @@ void _fmpz_mpoly_to_fmpz_poly_deflate(
 */
 void _fmpz_mpoly_from_fmpz_poly_inflate(
     fmpz_mpoly_t A,
-    flint_bitcnt_t Abits,
     const fmpz_poly_t B,
     slong var,
     const ulong * Ashift,
     const ulong * Astride,
     const fmpz_mpoly_ctx_t ctx)
 {
-    slong N;
     slong k;
     slong Alen;
-    fmpz * Acoeff;
-    ulong * Aexp;
-    slong Aalloc;
-    ulong * shiftexp;
-    ulong * strideexp;
     slong Bdeg = fmpz_poly_degree(B);
-    TMP_INIT;
+    fmpz_t exp;
+    fmpz_t exp2;
 
-    TMP_START;
-
-    FLINT_ASSERT(Abits <= FLINT_BITS);
     FLINT_ASSERT(!fmpz_poly_is_zero(B));
 
-    /* must have at least space for the highest exponent of var */
-    FLINT_ASSERT(1 + FLINT_BIT_COUNT(Ashift[var] + Bdeg*Astride[var]) <= Abits);
+    fmpz_init(exp);
+    fmpz_init(exp2);
 
-    N = mpoly_words_per_exp(Abits, ctx->minfo);
-    strideexp = (ulong*) TMP_ALLOC(N*sizeof(ulong));
-    shiftexp = (ulong*) TMP_ALLOC(N*sizeof(ulong));
-    mpoly_set_monomial_ui(shiftexp, Ashift, Abits, ctx->minfo);
-    mpoly_gen_monomial_sp(strideexp, var, Abits, ctx->minfo);
-    mpoly_monomial_mul_ui(strideexp, strideexp, N, Astride[var]);
+    fmpz_mpoly_gen(A, var, ctx);
+    _fmpz_mpoly_exp_ui(exp, Ashift, ctx);
+    fmpz_pow_ui(exp2, A->new_exps + 0, Astride[var]);
 
-    fmpz_mpoly_fit_bits(A, Abits, ctx);
-    A->bits = Abits;
-
-    Acoeff = A->coeffs;
-    Aexp = A->exps;
-    Aalloc = A->alloc;
     Alen = 0;
-    for (k = Bdeg; k >= 0; k--)
+    for (k = 0; k <= Bdeg; k ++)
     {
-        _fmpz_mpoly_fit_length(&Acoeff, &Aexp, &Aalloc, Alen + 1, N);
-        fmpz_poly_get_coeff_fmpz(Acoeff + Alen, B, k);
-        if (!fmpz_is_zero(Acoeff + Alen))
+        fmpz_mpoly_fit_length(A, Alen + 1, ctx);
+        fmpz_poly_get_coeff_fmpz(A->coeffs + Alen, B, k);
+        if (!fmpz_is_zero(A->coeffs + Alen))
         {
-            mpoly_monomial_madd(Aexp + N*Alen, shiftexp, k, strideexp, N);
+            fmpz_set(A->new_exps + Alen, exp);
             Alen++;
         }
+        fmpz_mul(exp, exp, exp2);
     }
 
-    A->coeffs = Acoeff;
-    A->exps = Aexp;
-    A->alloc = Aalloc;
     _fmpz_mpoly_set_length(A, Alen, ctx);
 
-    TMP_END;
+    fmpz_clear(exp);
+    fmpz_clear(exp2);
 }
-

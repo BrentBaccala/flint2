@@ -1143,8 +1143,7 @@ calculate_trivial_gcd:
         _fmpz_vec_content(gB, B->coeffs, B->length);
 
         fmpz_mpoly_fit_length(G, 1, ctx);
-        // BWB
-        // mpoly_set_monomial_ui(G->exps, I->Gmin_exp, Gbits, ctx->minfo);
+        _fmpz_mpoly_exp_ui(G->new_exps + 0, I->Gmin_exp, ctx);
         fmpz_gcd(G->coeffs + 0, gA, gB);
         _fmpz_mpoly_set_length(G, 1, ctx);
 
@@ -1187,9 +1186,8 @@ calculate_trivial_gcd:
         _fmpz_mpoly_to_fmpz_poly_deflate(b, B, v_in_both,
                                                  I->Bmin_exp, I->Gstride, ctx);
         fmpz_poly_gcd(g, a, b);
-        // BWB
-        // _fmpz_mpoly_from_fmpz_poly_inflate(G, Gbits, g, v_in_both,
-        //                                          I->Gmin_exp, I->Gstride, ctx);
+        _fmpz_mpoly_from_fmpz_poly_inflate(G, g, v_in_both,
+                                                  I->Gmin_exp, I->Gstride, ctx);
         fmpz_poly_clear(a);
         fmpz_poly_clear(b);
         fmpz_poly_clear(g);
