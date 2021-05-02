@@ -1633,7 +1633,7 @@ int fmpz_mpolyu_content_mpoly_threaded_pool(
     {
         j = 1;
     }
-    success = _fmpz_mpoly_gcd_threaded_pool(g, bits, A->coeffs + 0,
+    success = _fmpz_mpoly_gcd_threaded_pool(g, A->coeffs + 0,
                                      A->coeffs + j, ctx, handles, num_handles);
     if (!success)
     {
@@ -1646,7 +1646,7 @@ int fmpz_mpolyu_content_mpoly_threaded_pool(
         {
             continue;
         }
-        success = _fmpz_mpoly_gcd_threaded_pool(g, bits, g,
+        success = _fmpz_mpoly_gcd_threaded_pool(g, g,
                                      A->coeffs + i, ctx, handles, num_handles);
         FLINT_ASSERT(g->bits == bits);
         if (!success)

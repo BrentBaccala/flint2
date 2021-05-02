@@ -265,13 +265,13 @@ static int _try_missing_var(
     fmpz_mpoly_to_univar(Ax, A, var, ctx);
 
     FLINT_ASSERT(Ax->length > 0);
-    success = _fmpz_mpoly_gcd_threaded_pool(tG, Gbits, B, Ax->coeffs + 0, ctx, NULL, 0);
+    success = _fmpz_mpoly_gcd_threaded_pool(tG, B, Ax->coeffs + 0, ctx, NULL, 0);
     if (!success)
         goto cleanup;
 
     for (i = 1; i < Ax->length; i++)
     {
-        success = _fmpz_mpoly_gcd_threaded_pool(tG, Gbits, tG, Ax->coeffs + i, ctx, NULL, 0);
+        success = _fmpz_mpoly_gcd_threaded_pool(tG, tG, Ax->coeffs + i, ctx, NULL, 0);
         if (!success)
             goto cleanup;
     }
@@ -673,7 +673,7 @@ static int _try_bma(
     FLINT_ASSERT(Auu->length > 1);
     FLINT_ASSERT(Buu->length > 1);
 
-    _fmpz_mpoly_gcd_threaded_pool(Gamma, wbits, Auu->coeffs + 0,
+    _fmpz_mpoly_gcd_threaded_pool(Gamma, Auu->coeffs + 0,
                                   Buu->coeffs + 0, uctx, handles, num_handles);
     if (!success)
         goto cleanup;

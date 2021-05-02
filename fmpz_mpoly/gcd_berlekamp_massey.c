@@ -3768,7 +3768,7 @@ int fmpz_mpoly_gcd_berlekamp_massey(
     fmpz_mpolyu_divexact_mpoly_inplace(Auu, Ac, uctx);
     fmpz_mpolyu_divexact_mpoly_inplace(Buu, Bc, uctx);
 
-    success = _fmpz_mpoly_gcd_threaded_pool(Gamma, wbits, Auu->coeffs + 0,
+    success = _fmpz_mpoly_gcd_threaded_pool(Gamma, Auu->coeffs + 0,
                                             Buu->coeffs + 0, uctx, NULL, 0);
     if (!success)
         goto cleanup;
@@ -3778,7 +3778,7 @@ int fmpz_mpoly_gcd_berlekamp_massey(
     if (!success)
         goto cleanup;
 
-    success = _fmpz_mpoly_gcd_threaded_pool(Gc, wbits, Ac, Bc, uctx, NULL, 0);
+    success = _fmpz_mpoly_gcd_threaded_pool(Gc, Ac, Bc, uctx, NULL, 0);
     if (!success)
         goto cleanup;
 

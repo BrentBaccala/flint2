@@ -432,7 +432,7 @@ int fmpz_mpoly_gcd_zippel(
     if (!success)
         goto cleanup;
 
-    success = _fmpz_mpoly_gcd_threaded_pool(Gc, wbits, Ac, Bc, uctx, NULL, 0);
+    success = _fmpz_mpoly_gcd_threaded_pool(Gc, Ac, Bc, uctx, NULL, 0);
     if (!success)
         goto cleanup;
 

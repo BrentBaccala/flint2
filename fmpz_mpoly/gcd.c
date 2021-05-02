@@ -359,66 +359,25 @@ cleanup:
 
 /*********************** Easy when B is a monomial ***************************/
 static int _try_monomial_gcd(
-    fmpz_mpoly_t G, flint_bitcnt_t Gbits,
+    fmpz_mpoly_t G,
     const fmpz_mpoly_t A,
     const fmpz_mpoly_t B,
     const fmpz_mpoly_ctx_t ctx)
 {
     slong i;
-    fmpz_t g;
-    fmpz * minAfields, * minAdegs, * minBdegs;
-    TMP_INIT;
 
     FLINT_ASSERT(A->length > 0);
     FLINT_ASSERT(B->length == 1);
 
-    TMP_START;
-
-    /* get the field-wise minimum of A */
-    minAfields = (fmpz *) TMP_ALLOC(ctx->minfo->nfields*sizeof(fmpz));
-    for (i = 0; i < ctx->minfo->nfields; i++)
-        fmpz_init(minAfields + i);
-    mpoly_min_fields_fmpz(minAfields, A->exps, A->length, A->bits, ctx->minfo);
-
-    /* unpack to get the min degrees of each variable in A */
-    minAdegs = (fmpz *) TMP_ALLOC(ctx->minfo->nvars*sizeof(fmpz));
-    for (i = 0; i < ctx->minfo->nvars; i++)
-        fmpz_init(minAdegs + i);
-    mpoly_get_monomial_ffmpz_unpacked_ffmpz(minAdegs, minAfields, ctx->minfo);
-
-    /* get the degree of each variable in B */
-    minBdegs = (fmpz *) TMP_ALLOC(ctx->minfo->nvars*sizeof(fmpz));
-    for (i = 0; i < ctx->minfo->nvars; i++)
-        fmpz_init(minBdegs + i);
-    mpoly_get_monomial_ffmpz(minBdegs, B->exps, B->bits, ctx->minfo);
-
-    /* compute the degree of each variable in G */
-    _fmpz_vec_min_inplace(minBdegs, minAdegs, ctx->minfo->nvars);
-
-    /* compute the coefficient of G */
-    fmpz_init_set(g, B->coeffs + 0);
-    _fmpz_vec_content_chained(g, A->coeffs, A->length);
-
-    /* write G */
     fmpz_mpoly_fit_length(G, 1, ctx);
-    fmpz_mpoly_fit_bits(G, Gbits, ctx);
-    G->bits = Gbits;
-    mpoly_set_monomial_ffmpz(G->exps, minBdegs, Gbits, ctx->minfo);
-    fmpz_swap(G->coeffs + 0, g);
-    fmpz_clear(g);
+
+    fmpz_set(G->new_exps + 0, B->new_exps + 0);
+    fmpz_set(G->coeffs + 0, B->coeffs + 0);
+
+    _fmpz_vec_content_chained(G->new_exps + 0, A->new_exps, A->length);
+    _fmpz_vec_content_chained(G->coeffs + 0, A->coeffs, A->length);
+
     _fmpz_mpoly_set_length(G, 1, ctx);
-
-    for (i = 0; i < ctx->minfo->nfields; i++)
-    {
-        fmpz_clear(minAfields + i);
-    }
-    for (i = 0; i < ctx->minfo->nvars; i++)
-    {
-        fmpz_clear(minAdegs + i);
-        fmpz_clear(minBdegs + i);
-    }
-
-    TMP_END;
 
     return 1;
 }
@@ -426,20 +385,18 @@ static int _try_monomial_gcd(
 
 /********************** See if cofactors are monomials ***********************/
 static int _try_monomial_cofactors(
-    fmpz_mpoly_t G, flint_bitcnt_t Gbits,
+    fmpz_mpoly_t G,
     const fmpz_mpoly_t A,
     const fmpz_mpoly_t B,
     const fmpz_mpoly_ctx_t ctx)
 {
     int success;
-    slong i, j;
-    slong NA, NG;
-    slong nvars = ctx->minfo->nvars;
-    fmpz * Abarexps, * Bbarexps, * Texps;
+    slong i;
+    fmpz_t Aminexp, Bminexp;
+    fmpz_t Abarexp;
     fmpz_t t1, t2;
     fmpz_t gA, gB;
     fmpz_mpoly_t T;
-    TMP_INIT;
 
     FLINT_ASSERT(A->length > 0);
     FLINT_ASSERT(B->length > 0);
@@ -449,6 +406,9 @@ static int _try_monomial_cofactors(
 
     fmpz_init(t1);
     fmpz_init(t2);
+    fmpz_init(Abarexp);
+    fmpz_init(Aminexp);
+    fmpz_init(Bminexp);
     fmpz_init_set(gA, A->coeffs + 0);
     fmpz_init_set(gB, B->coeffs + 0);
 
@@ -462,24 +422,22 @@ static int _try_monomial_cofactors(
 
         fmpz_gcd(gA, gA, A->coeffs + i);
         fmpz_gcd(gB, gB, B->coeffs + i);
+
+        fmpz_mul(t1, A->new_exps + i, B->new_exps + 0);
+        fmpz_mul(t2, B->new_exps + i, A->new_exps + 0);
+        success = fmpz_equal(t1, t2);
+        if (!success)
+            goto cleanup;
     }
 
-    TMP_START;
+    _fmpz_vec_content_chained(Aminexp, A->new_exps, A->length);
+    _fmpz_vec_content_chained(Bminexp, B->new_exps, B->length);
 
-    Abarexps = (fmpz *) TMP_ALLOC(3*nvars*sizeof(fmpz));
-    Bbarexps = Abarexps + 1*nvars;
-    Texps    = Abarexps + 2*nvars;
-    for (j = 0; j < nvars; j++)
-    {
-        fmpz_init(Abarexps + j);
-        fmpz_init(Bbarexps + j);
-        fmpz_init(Texps + j);
-    }
-
-    success = mpoly_monomial_cofactors(Abarexps, Bbarexps, A->exps, A->bits,
-                                      B->exps, B->bits, A->length, ctx->minfo);
-    if (!success)
-        goto cleanup_tmp;
+    /* compute A's cofactor exponents in Abarexp */
+    /* fmpz_lcm(Abarexp, Aminexp, Bminexp); */
+    /* fmpz_divexact(Abarexp, Abarexp, Bminexp); */
+    fmpz_gcd(Abarexp, Aminexp, Bminexp);
+    fmpz_divexact(Abarexp, Bminexp, Abarexp);
 
     /* put A's cofactor coefficient in t1 */
     fmpz_gcd(t2, gA, gB);
@@ -487,15 +445,11 @@ static int _try_monomial_cofactors(
     if (fmpz_sgn(A->coeffs + 0) < 0)
         fmpz_neg(t1, t1);
 
-    fmpz_mpoly_init3(T, A->length, Gbits, ctx);
-    NG = mpoly_words_per_exp(Gbits, ctx->minfo);
-    NA = mpoly_words_per_exp(A->bits, ctx->minfo);
+    fmpz_mpoly_init3(T, A->length, 0, ctx);
     T->length = A->length;
     for (i = 0; i < A->length; i++)
     {
-        mpoly_get_monomial_ffmpz(Texps, A->exps + NA*i, A->bits, ctx->minfo);
-        _fmpz_vec_sub(Texps, Texps, Abarexps, nvars);
-        mpoly_set_monomial_ffmpz(T->exps + NG*i, Texps, Gbits, ctx->minfo);
+        fmpz_divexact(T->new_exps + i, A->new_exps + i, Abarexp);
         fmpz_divexact(T->coeffs + i, A->coeffs + i, t1);
     }
     fmpz_mpoly_swap(G, T, ctx);
@@ -503,19 +457,11 @@ static int _try_monomial_cofactors(
 
     success = 1;
 
-cleanup_tmp:
-
-    for (j = 0; j < nvars; j++)
-    {
-        fmpz_clear(Abarexps + j);
-        fmpz_clear(Bbarexps + j);
-        fmpz_clear(Texps + j);
-    }
-
-    TMP_END;
-
 cleanup:
 
+    fmpz_clear(Abarexp);
+    fmpz_clear(Aminexp);
+    fmpz_clear(Bminexp);
     fmpz_clear(t1);
     fmpz_clear(t2);
     fmpz_clear(gA);
@@ -544,13 +490,13 @@ static int _try_missing_var(
     fmpz_mpoly_to_univar(Ax, A, var, ctx);
 
     FLINT_ASSERT(Ax->length > 0);
-    success = _fmpz_mpoly_gcd_threaded_pool(tG, Gbits, B, Ax->coeffs + 0, ctx, NULL, 0);
+    success = _fmpz_mpoly_gcd_threaded_pool(tG, B, Ax->coeffs + 0, ctx, NULL, 0);
     if (!success)
         goto cleanup;
 
     for (i = 1; i < Ax->length; i++)
     {
-        success = _fmpz_mpoly_gcd_threaded_pool(tG, Gbits, tG, Ax->coeffs + i, ctx, NULL, 0);
+        success = _fmpz_mpoly_gcd_threaded_pool(tG, tG, Ax->coeffs + i, ctx, NULL, 0);
         if (!success)
             goto cleanup;
     }
@@ -732,7 +678,7 @@ static int _try_zippel(
     if (!success)
         goto cleanup;
 
-    success = _fmpz_mpoly_gcd_threaded_pool(Gc, wbits, Ac, Bc, uctx, NULL, 0);
+    success = _fmpz_mpoly_gcd_threaded_pool(Gc, Ac, Bc, uctx, NULL, 0);
     if (!success)
         goto cleanup;
 
@@ -914,7 +860,7 @@ static int _try_bma(
     FLINT_ASSERT(Ac->bits == wbits);
     FLINT_ASSERT(Bc->bits == wbits);
 
-    _fmpz_mpoly_gcd_threaded_pool(Gamma, wbits, Auu->coeffs + 0, Buu->coeffs + 0,
+    _fmpz_mpoly_gcd_threaded_pool(Gamma, Auu->coeffs + 0, Buu->coeffs + 0,
                                                    uctx, handles, num_handles);
     if (!success)
         goto cleanup;
@@ -927,7 +873,7 @@ static int _try_bma(
     if (!success)
         goto cleanup;
 
-    success = _fmpz_mpoly_gcd_threaded_pool(Gc, wbits, Ac, Bc, uctx, handles, num_handles);
+    success = _fmpz_mpoly_gcd_threaded_pool(Gc, Ac, Bc, uctx, handles, num_handles);
     if (!success)
         goto cleanup;
 
@@ -1085,7 +1031,7 @@ cleanup:
     return is 1 for success, 0 for failure.
 */
 int _fmpz_mpoly_gcd_threaded_pool(
-    fmpz_mpoly_t G, flint_bitcnt_t Gbits,
+    fmpz_mpoly_t G,
     const fmpz_mpoly_t A,
     const fmpz_mpoly_t B,
     const fmpz_mpoly_ctx_t ctx,
@@ -1103,24 +1049,19 @@ int _fmpz_mpoly_gcd_threaded_pool(
 
     FLINT_ASSERT(A->length > 0);
     FLINT_ASSERT(B->length > 0);
-    FLINT_ASSERT(Gbits <= FLINT_BITS);
-    FLINT_ASSERT(A->bits <= FLINT_BITS);
-    FLINT_ASSERT(B->bits <= FLINT_BITS);
 
     if (A->length == 1)
     {
-        return _try_monomial_gcd(G, Gbits, B, A, ctx);
+        return _try_monomial_gcd(G, B, A, ctx);
     }
     else if (B->length == 1)
     {
-        return _try_monomial_gcd(G, Gbits, A, B, ctx);
+        return _try_monomial_gcd(G, A, B, ctx);
     }
 
     mpoly_gcd_info_init(I, nvars);
 
     /* entries of I are all now invalid */
-
-    I->Gbits = Gbits;
 
     mpoly_gcd_info_limits(I->Amax_exp, I->Amin_exp, I->Alead_count,
                       I->Atail_count, A->exps, A->bits, A->length, ctx->minfo);
@@ -1135,7 +1076,7 @@ int _fmpz_mpoly_gcd_threaded_pool(
         if (I->Amax_exp[j] - I->Amin_exp[j] != I->Bmax_exp[j] - I->Bmin_exp[j])
             goto skip_monomial_cofactors;
     }
-    if (_try_monomial_cofactors(G, I->Gbits, A, B, ctx))
+    if (_try_monomial_cofactors(G, A, B, ctx))
     {
         goto successful;
     }
@@ -1202,9 +1143,8 @@ calculate_trivial_gcd:
         _fmpz_vec_content(gB, B->coeffs, B->length);
 
         fmpz_mpoly_fit_length(G, 1, ctx);
-        fmpz_mpoly_fit_bits(G, Gbits, ctx);
-        G->bits = Gbits;
-        mpoly_set_monomial_ui(G->exps, I->Gmin_exp, Gbits, ctx->minfo);
+        // BWB
+        // mpoly_set_monomial_ui(G->exps, I->Gmin_exp, Gbits, ctx->minfo);
         fmpz_gcd(G->coeffs + 0, gA, gB);
         _fmpz_mpoly_set_length(G, 1, ctx);
 
@@ -1247,8 +1187,9 @@ calculate_trivial_gcd:
         _fmpz_mpoly_to_fmpz_poly_deflate(b, B, v_in_both,
                                                  I->Bmin_exp, I->Gstride, ctx);
         fmpz_poly_gcd(g, a, b);
-        _fmpz_mpoly_from_fmpz_poly_inflate(G, Gbits, g, v_in_both,
-                                                 I->Gmin_exp, I->Gstride, ctx);
+        // BWB
+        // _fmpz_mpoly_from_fmpz_poly_inflate(G, Gbits, g, v_in_both,
+        //                                          I->Gmin_exp, I->Gstride, ctx);
         fmpz_poly_clear(a);
         fmpz_poly_clear(b);
         fmpz_poly_clear(g);
@@ -1386,7 +1327,8 @@ cleanup:
 
     if (success)
     {
-        fmpz_mpoly_repack_bits_inplace(G, Gbits, ctx);
+        // BWB
+        // fmpz_mpoly_repack_bits_inplace(G, Gbits, ctx);
         FLINT_ASSERT(G->length > 0);
         if (fmpz_sgn(G->coeffs + 0) < 0)
             fmpz_mpoly_neg(G, G, ctx);
@@ -1448,20 +1390,20 @@ int fmpz_mpoly_gcd(
     if (A->bits <= FLINT_BITS && B->bits <= FLINT_BITS)
     {
         num_handles = flint_request_threads(&handles, thread_limit);
-        success = _fmpz_mpoly_gcd_threaded_pool(G, Gbits, A, B, ctx, handles, num_handles);
+        success = _fmpz_mpoly_gcd_threaded_pool(G, A, B, ctx, handles, num_handles);
         flint_give_back_threads(handles, num_handles);
         return success;
     }
 
     if (A->length == 1)
     {
-        return _try_monomial_gcd(G, Gbits, B, A, ctx);
+        return _try_monomial_gcd(G, B, A, ctx);
     }
     else if (B->length == 1)
     {
-        return _try_monomial_gcd(G, Gbits, A, B, ctx);
+        return _try_monomial_gcd(G, A, B, ctx);
     }
-    else if (_try_monomial_cofactors(G, Gbits, A, B, ctx))
+    else if (_try_monomial_cofactors(G, A, B, ctx))
     {
         return 1;
     }
@@ -1501,7 +1443,7 @@ int fmpz_mpoly_gcd(
 
         num_handles = flint_request_threads(&handles, thread_limit);
         Gbits = FLINT_MIN(Ause->bits, Buse->bits);
-        success = _fmpz_mpoly_gcd_threaded_pool(G, Gbits, Ause, Buse, ctx,
+        success = _fmpz_mpoly_gcd_threaded_pool(G, Ause, Buse, ctx,
                                                          handles, num_handles);
         flint_give_back_threads(handles, num_handles);
 
@@ -1547,7 +1489,7 @@ could_not_repack:
 
         num_handles = flint_request_threads(&handles, thread_limit);
         Gbits = FLINT_MIN(Anew->bits, Bnew->bits);
-        success = _fmpz_mpoly_gcd_threaded_pool(G, Gbits, Anew, Bnew, ctx,
+        success = _fmpz_mpoly_gcd_threaded_pool(G, Anew, Bnew, ctx,
                                                          handles, num_handles);
         flint_give_back_threads(handles, num_handles);
 

@@ -944,7 +944,7 @@ FLINT_DLL void fmpz_mpoly_term_content(fmpz_mpoly_t M, const fmpz_mpoly_t A,
 FLINT_DLL int fmpz_mpoly_gcd(fmpz_mpoly_t G,
        const fmpz_mpoly_t A, const fmpz_mpoly_t B, const fmpz_mpoly_ctx_t ctx);
 
-FLINT_DLL int _fmpz_mpoly_gcd_threaded_pool(fmpz_mpoly_t G, flint_bitcnt_t Gbits,
+FLINT_DLL int _fmpz_mpoly_gcd_threaded_pool(fmpz_mpoly_t G,
        const fmpz_mpoly_t A, const fmpz_mpoly_t B, const fmpz_mpoly_ctx_t ctx,
                         const thread_pool_handle * handles, slong num_handles);
 
