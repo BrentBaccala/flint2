@@ -19,7 +19,7 @@ ulong fmpz_mpoly_get_coeff_ui_ui(const fmpz_mpoly_t A,
     int exists;
 
     fmpz_init(newexp);
-    _fmpz_mpoly_exp_ui(newexp, exp, ctx);
+    fmpz_mpoly_set_monomial_ui(newexp, exp, ctx);
     exists = _fmpz_mpoly_monomial_exists(&index, A->new_exps, newexp, A->length);
     fmpz_zero(newexp);
 

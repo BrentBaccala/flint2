@@ -11,7 +11,7 @@
 
 #include "fmpz_mpoly.h"
 
-void _fmpz_mpoly_exp_ui(fmpz_t new_exp, const ulong * exp, const fmpz_mpoly_ctx_t ctx)
+void fmpz_mpoly_set_monomial_ui(fmpz_t new_exp, const ulong * exp, const fmpz_mpoly_ctx_t ctx)
 {
     slong i;
     fmpz_t prime;

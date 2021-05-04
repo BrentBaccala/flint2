@@ -1146,7 +1146,7 @@ calculate_trivial_gcd:
         _fmpz_vec_content(gB, B->coeffs, B->length);
 
         fmpz_mpoly_fit_length(G, 1, ctx);
-        _fmpz_mpoly_exp_ui(G->new_exps + 0, I->Gmin_exp, ctx);
+        fmpz_mpoly_set_monomial_ui(G->new_exps + 0, I->Gmin_exp, ctx);
         fmpz_gcd(G->coeffs + 0, gA, gB);
         _fmpz_mpoly_set_length(G, 1, ctx);
 

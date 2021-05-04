@@ -20,7 +20,7 @@ void fmpz_mpoly_set_coeff_fmpz_ui(fmpz_mpoly_t poly,
     int exists;
 
     fmpz_init(newexp);
-    _fmpz_mpoly_exp_ui(newexp, exp, ctx);
+    fmpz_mpoly_set_monomial_ui(newexp, exp, ctx);
 
     exists = _fmpz_mpoly_monomial_exists(&index, poly->new_exps, newexp, poly->length);
 

@@ -41,7 +41,7 @@ void fmpz_mpoly_randtest_bits(fmpz_mpoly_t A, flint_rand_t state,
         if (fmpz_is_zero(exp))
             fmpz_one(exp);
 	fmpz_mpoly_get_monomial_ui(ulong_exp, exp, ctx->minfo);
-	_fmpz_mpoly_exp_ui(A->new_exps + i, ulong_exp, ctx);
+	fmpz_mpoly_set_monomial_ui(A->new_exps + i, ulong_exp, ctx);
 
     }
 

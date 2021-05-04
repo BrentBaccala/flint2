@@ -18,7 +18,7 @@ void _fmpz_mpoly_push_exp_ui(fmpz_mpoly_t A,
     fmpz_t new_exp;
 
     fmpz_init(new_exp);
-    _fmpz_mpoly_exp_ui(new_exp, exp, ctx);
+    fmpz_mpoly_set_monomial_ui(new_exp, exp, ctx);
 
     fmpz_mpoly_fit_length(A, old_length + 1, ctx);
     A->length = old_length + 1;

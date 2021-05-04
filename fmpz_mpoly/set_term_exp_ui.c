@@ -15,15 +15,10 @@
 void fmpz_mpoly_set_term_exp_ui(fmpz_mpoly_t A, 
                        slong i, const ulong * exp, const fmpz_mpoly_ctx_t ctx)
 {
-    fmpz_t newexp;
-
     if ((ulong) i >= (ulong) A->length)
     {
         flint_throw(FLINT_ERROR, "Index out of range in fmpz_mpoly_set_term_exp_ui");
     }
 
-    fmpz_init(newexp);
-    _fmpz_mpoly_exp_ui(newexp, exp, ctx);
-    fmpz_set(A->new_exps + i, newexp);
-    fmpz_zero(newexp);
+    fmpz_mpoly_set_monomial_ui(A->new_exps + i, exp, ctx);
 }

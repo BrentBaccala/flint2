@@ -159,7 +159,7 @@ void _fmpz_mpoly_from_fmpz_poly_inflate(
     fmpz_init(exp2);
 
     fmpz_mpoly_gen(A, var, ctx);
-    _fmpz_mpoly_exp_ui(exp, Ashift, ctx);
+    fmpz_mpoly_set_monomial_ui(exp, Ashift, ctx);
     fmpz_pow_ui(exp2, A->new_exps + 0, Astride[var]);
 
     Alen = 0;
