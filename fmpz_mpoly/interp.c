@@ -106,9 +106,9 @@ void fmpz_mpoly_interp_lift_p(
     fmpz_mpoly_fit_length(A, Ap->length, ctx);
 
     for (i = 0; i < Ap->length; i++) {
-        nmod_mpoly_get_term_exp_ui(exps, Ap, i, ctx);
+        nmod_mpoly_get_term_exp_ui(exps, Ap, i, ctxp);
         /* just push a coefficient of 1 here */
-        fmpz_mpoly_push_term_ui_ui(A, 1, exps, ctxp);
+        fmpz_mpoly_push_term_ui_ui(A, 1, exps, ctx);
     }
     /* now adjust the coefficients to use the symmetric range */
     _fmpz_vec_set_nmod_vec(A->coeffs, Ap->coeffs, Ap->length, ctxp->ffinfo->mod);
