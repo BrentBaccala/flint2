@@ -789,6 +789,11 @@ FLINT_DLL int _fmpz_mpoly_mul_dense(fmpz_mpoly_t P,
                                  const fmpz_mpoly_t B, fmpz * maxBfields,
                                                    const fmpz_mpoly_ctx_t ctx);
 
+/* Combined Addition and Multiplication **************************************/
+
+FLINT_DLL void fmpz_mpoly_addmul_multi(fmpz_mpoly_t A,
+       const fmpz_mpoly_struct ** Blist, const slong * Blengths, const slong Bnumseq, const fmpz_mpoly_ctx_t ctx);
+
 /* Powering ******************************************************************/
 
 FLINT_DLL int fmpz_mpoly_pow_fmpz(fmpz_mpoly_t A, const fmpz_mpoly_t B,
