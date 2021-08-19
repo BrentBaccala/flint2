@@ -19,7 +19,7 @@
 /* #define EXPTEST (*exp == 0x6000002000004LL) */
 #define EXPTEST 0
 #define DEBUGTEST 0
-#define PRINT_STATUS 1
+#define PRINT_STATUS (master->numterms == 40)
 
 typedef unsigned short hind_t;
 #define HIND_FORMAT "%d"
@@ -132,8 +132,15 @@ struct _fmpz_mpoly_addmul_multi_master
     const char * status_str;
 };
 
-static int blocksize = 1024;
-static int numblocks = 4;
+/* Target size: 1 GB per term (40 terms)
+ * 130 vars at 8 bits per exponent = 17 words per exponent + 1 coeff word = 18 words per term = 144 bytes per term
+ * 8192 * 1024 * 144 * 40 = approx 48 GB
+ * 8192 * 1024 blocks per term
+ * 131072 * 64 blocks per term
+ */
+
+static int blocksize = 128*1024;
+static int numblocks = 64;
 
 /* argument passed to a worker thread
  *
@@ -585,7 +592,7 @@ void _fmpz_mpoly_addmul_multi_merge(
             if (control[heap[1].control].total_output % blocksize == 0)
             {
                 pthread_mutex_lock(& master->mutex);
-                pthread_cond_signal(& master->wake_threads);
+                pthread_cond_broadcast(& master->wake_threads);
                 pthread_mutex_unlock(& master->mutex);
             }
 #endif
@@ -1015,7 +1022,7 @@ void _fmpz_mpoly_addmul_multi_threaded_maxfields(
     for (i = 0; i < Btotallen; i++)
     {
         Abits = FLINT_MAX(Abits, Blist[i]->bits);
-        maxlen = maxlen + Blist[i]->length;
+        /* maxlen = maxlen + Blist[i]->length; */
 
         if (Blist[i] == A)
             aliasing_required = 1;
@@ -1167,6 +1174,8 @@ void fmpz_mpoly_addmul_multi_threaded(
     }
 
     TMP_START;
+
+    flint_set_num_threads(12);
 
     maxBfields = (fmpz *) TMP_ALLOC(ctx->minfo->nfields*sizeof(fmpz));
     maxtermfields = (fmpz *) TMP_ALLOC(ctx->minfo->nfields*sizeof(fmpz));

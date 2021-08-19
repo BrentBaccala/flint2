@@ -50,6 +50,7 @@ slong _fmpz_mpoly_addmul_multi(
     const fmpz_mpoly_ctx_t ctx)
 {
    slong i, j, k, l;
+   slong total_len = 0;
    slong next_loc;
    slong Q_len = 0, heap_len = 1; /* heap starts empty, and its zero index is unused, so heap_len = 1 */
    slong heap_size;
@@ -77,9 +78,12 @@ slong _fmpz_mpoly_addmul_multi(
    fmpz_t tmp_coeff;
    const fmpz_mpoly_struct ** Bstart;
    slong term;
+   int verbose;
    TMP_INIT;
 
    TMP_START;
+
+   verbose = ((Bnumseq == 40) && (Btotallen == 480));
 
    fmpz_init(tmp_coeff);
 
@@ -110,6 +114,10 @@ slong _fmpz_mpoly_addmul_multi(
       hind_totallen += hind_len[i];
    }
 
+   if (verbose) {
+      fprintf(stderr, "hind_totallen %ld N %ld\n", hind_totallen, N);
+   }
+
    next_loc = hind_totallen + 4;   /* something bigger than heap can ever be */
 
    heap_block_size = 16384/sizeof(ulong)/N;
@@ -119,7 +127,7 @@ slong _fmpz_mpoly_addmul_multi(
    heap = (mpoly_heap_s *) flint_malloc(heap_size*sizeof(mpoly_heap_s));
    /* alloc array of heap nodes which can be chained together */
    chain = (mpoly_heap_t *) TMP_ALLOC(chain_size*sizeof(mpoly_heap_t));
-   chain_list = (mpoly_heap_t **) flint_malloc(chain_size*sizeof(mpoly_heap_t **));
+   chain_list = (mpoly_heap_t **) flint_malloc(chain_size*sizeof(mpoly_heap_t *));
    for (i = 0; i < chain_size; i++)
       chain_list[i] = chain + i;
 
@@ -286,6 +294,10 @@ slong _fmpz_mpoly_addmul_multi(
 
                      if (chain_next == chain_size)
                      {
+                         if (total_len > 1523000) {
+                             fprintf(stderr, "Reallocing chain at chain_size %ld\n", chain_size);
+                         }
+
                          chain_size += chain_block_size;
                          chain = (mpoly_heap_t *) TMP_ALLOC(chain_block_size*sizeof(mpoly_heap_t));
                          chain_list = (mpoly_heap_t **) flint_realloc(chain_list, chain_size*sizeof(mpoly_heap_t *));
@@ -329,8 +341,19 @@ slong _fmpz_mpoly_addmul_multi(
          }
       }
 
-      if (fmpz_is_zero(A->coeffs + k))
-         k--;
+      if (! verbose) {
+          if (fmpz_is_zero(A->coeffs + k))
+              k--;
+      } else {
+          if (! fmpz_is_zero(A->coeffs + k)) {
+             total_len ++;
+             if (total_len % 1000 == 0) {
+                fprintf(stderr, "Polynomial length %ld\n", total_len);
+             }
+          }
+          k--;
+      }
+
    }
 
    k++;
@@ -382,7 +405,8 @@ void _fmpz_mpoly_addmul_multi_maxfields(
     for (i = 0; i < Btotallen; i++)
     {
         Abits = FLINT_MAX(Abits, Blist[i]->bits);
-        maxlen = maxlen + Blist[i]->length;
+        /* XXX not sure how much memory we should pre-allocate */
+        /* maxlen = maxlen + Blist[i]->length; */
 
         if (Blist[i] == A)
             aliasing_required = 1;
